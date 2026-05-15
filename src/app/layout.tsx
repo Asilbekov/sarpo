@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "SARPO — Toshkent bo'ylab keng tarmoqli filiallarimizda sizni eng baxtli lahzalaringiz uchun hamroh bo'ladigan liboslar kutmoqda.",
   keywords: ["SARPO", "fashion", "Uzbekistan", "traditional clothing", "modern style"],
   icons: {
-    icon: "/images/sarpo-logo-transparent.svg",
+    icon: "/images/sarpo_logo.svg",
   },
 };
 
