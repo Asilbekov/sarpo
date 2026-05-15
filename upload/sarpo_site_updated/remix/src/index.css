@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display: "Playfair Display", "Inter", ui-serif, Georgia, serif;
+
+  /* Exact colors extracted from SARPO SVG mockups */
+  --color-brand-wine: #2D020C;       /* Deep burgundy - header, footer, primary buttons */
+  --color-brand-ruby: #680018;       /* Brighter burgundy - accents, badges, highlights */
+  --color-brand-ink: #1A1314;        /* Near-black for body text */
+  --color-brand-beige: #EFE6E1;      /* Warm beige - nav bar bg, soft accents */
+  --color-brand-cream: #F9F7F5;      /* Off-white page background */
+  --color-brand-champagne: #FBF1DC;  /* Pale cream - product card backgrounds */
+  --color-brand-mute: #706567;       /* Muted gray for secondary text */
+
+  /* Backward compatibility aliases */
+  --color-brand-red: #2D020C;
+  --color-brand-light: #F9F7F5;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-brand-cream);
+  color: var(--color-brand-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.04em;
+}

@@ -1,0 +1,930 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import {
+  Search,
+  ShoppingBag,
+  ArrowRight,
+  ArrowLeft,
+  SlidersHorizontal,
+  ChevronDown,
+  Trash2,
+  User,
+  Phone,
+  MapPin,
+  Wallet,
+  CreditCard,
+  Facebook,
+  Instagram,
+  Twitter,
+} from 'lucide-react';
+import { products, heroSlides, collections, productGallery, Product } from '@/lib/sarpo-data';
+import { useCartStore } from '@/lib/cart-store';
+import { toast } from 'sonner';
+
+/* ──────────────── Types ──────────────── */
+type PageView = 'home' | 'catalog' | 'product' | 'cart';
+
+/* ──────────────── Header ──────────────── */
+function Header({ onNavigate, currentPage }: { onNavigate: (page: PageView) => void; currentPage: PageView }) {
+  const cartCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.quantity, 0));
+  const navLinks = [
+    { title: 'Весенняя коллекция', collection: 'spring' },
+    { title: 'Летняя коллекция', collection: 'summer' },
+    { title: 'Осенняя коллекция', collection: 'autumn' },
+    { title: 'Зимняя коллекция', collection: 'winter' },
+    { title: 'Новинки', collection: 'new' },
+  ];
+
+  return (
+    <header className="w-full flex flex-col sticky top-0 z-50">
+      {/* Top bar — deep wine background */}
+      <div
+        className="text-white px-4 md:px-12 flex items-center justify-between"
+        style={{ backgroundColor: '#2D020C', minHeight: '72px' }}
+      >
+        <button
+          onClick={() => onNavigate('home')}
+          className="flex items-center gap-3 py-3"
+        >
+          <img
+            src="/images/sarpo_logo.png"
+            alt="SARPO"
+            className="h-10 w-auto select-none"
+            draggable={false}
+          />
+          <span
+            className="text-2xl md:text-3xl font-medium tracking-[0.2em] text-white"
+            style={{ fontFamily: 'Georgia, serif' }}
+          >
+            SARPO
+          </span>
+        </button>
+
+        <div className="flex items-center gap-4">
+          <div className="relative hidden md:block">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search"
+              className="bg-white text-gray-800 text-sm rounded-full pl-10 pr-5 py-2.5 w-[280px] lg:w-[320px] outline-none border-0 focus:ring-2 focus:ring-white/30"
+            />
+          </div>
+          <button
+            onClick={() => onNavigate('cart')}
+            className="bg-white p-2.5 rounded-full relative hover:scale-105 transition-transform"
+            style={{ color: '#2D020C' }}
+            aria-label="Корзина"
+          >
+            <ShoppingBag className="w-5 h-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#680018] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Nav bar — warm beige background */}
+      <div style={{ backgroundColor: '#EFE6E1' }} className="border-b border-black/5">
+        <nav className="max-w-[1400px] mx-auto px-4 md:px-12">
+          <ul className="flex items-center w-full justify-between py-3 md:py-4 text-xs md:text-[15px] text-[#1A1314] overflow-x-auto">
+            {navLinks.map((link) => (
+              <li key={link.collection}>
+                <button
+                  onClick={() => onNavigate('catalog')}
+                  className="transition-colors hover:text-[#680018] whitespace-nowrap px-1"
+                >
+                  {link.title}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+/* ──────────────── Footer ──────────────── */
+function Footer({ onNavigate }: { onNavigate: (page: PageView) => void }) {
+  return (
+    <footer
+      className="text-white pt-12 md:pt-16 pb-8 px-4 md:px-12 mt-auto"
+      style={{ backgroundColor: '#2D020C' }}
+    >
+      <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 border-b border-white/15 pb-10 md:pb-12 mb-8">
+        <div>
+          <h3 className="font-medium text-lg mb-6 tracking-wide">Продукты</h3>
+          <ul className="space-y-4 text-sm text-white/75">
+            <li><button onClick={() => onNavigate('catalog')} className="hover:text-white transition-colors">Весенняя коллекция</button></li>
+            <li><button onClick={() => onNavigate('catalog')} className="hover:text-white transition-colors">Летняя коллекция</button></li>
+            <li><button onClick={() => onNavigate('catalog')} className="hover:text-white transition-colors">Осенняя коллекция</button></li>
+            <li><button onClick={() => onNavigate('catalog')} className="hover:text-white transition-colors">Зимняя коллекция</button></li>
+          </ul>
+        </div>
+        <div>
+          <h3 className="font-medium text-lg mb-6 tracking-wide">Компания</h3>
+          <ul className="space-y-4 text-sm text-white/75">
+            <li><span className="hover:text-white transition-colors cursor-pointer">О нас</span></li>
+            <li><span className="hover:text-white transition-colors cursor-pointer">Карьера</span></li>
+            <li><span className="hover:text-white transition-colors cursor-pointer">Устойчивое развитие</span></li>
+            <li><span className="hover:text-white transition-colors cursor-pointer">Пресса</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3 className="font-medium text-lg mb-6 tracking-wide">Связаться</h3>
+          <div className="flex gap-4 mb-8">
+            <a href="#" className="hover:text-white/70 transition-colors" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
+            <a href="#" className="hover:text-white/70 transition-colors" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
+            <a href="#" className="hover:text-white/70 transition-colors" aria-label="Twitter"><Twitter className="w-5 h-5" /></a>
+          </div>
+          <p className="text-sm text-white/75 mb-4">Подпишитесь на нашу рассылку</p>
+          <form className="flex w-full" onSubmit={(e) => e.preventDefault()}>
+            <input
+              type="email"
+              placeholder="Email address"
+              className="bg-black/30 border border-white/15 text-white placeholder-white/40 px-4 py-2.5 text-sm outline-none flex-grow focus:border-white/40"
+            />
+            <button
+              type="submit"
+              className="bg-white/10 hover:bg-white/20 border border-transparent transition-colors px-6 py-2.5 text-sm font-medium"
+            >
+              Join
+            </button>
+          </form>
+        </div>
+      </div>
+      <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center text-xs text-white/50">
+        <p>&copy; 2026 SARPO. All rights reserved.</p>
+        <div className="flex gap-6 mt-4 md:mt-0">
+          <span className="hover:text-white transition-colors cursor-pointer">Политика конфиденциальности</span>
+          <span className="hover:text-white transition-colors cursor-pointer">Условия использования</span>
+          <span className="hover:text-white transition-colors cursor-pointer">Публичная оферта</span>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ──────────────── ProductCard ──────────────── */
+function ProductCard({
+  product,
+  onSelect,
+}: {
+  product: Product;
+  onSelect: (product: Product) => void;
+}) {
+  return (
+    <button
+      onClick={() => onSelect(product)}
+      className="group block text-left w-full"
+    >
+      <div
+        className="relative aspect-[3/4] overflow-hidden rounded-sm group-hover:shadow-xl transition-all duration-300 border border-gray-100"
+        style={{ backgroundColor: '#FFFFFF' }}
+      >
+        <img
+          src={product.image}
+          alt={product.name}
+          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+          loading="lazy"
+        />
+        {/* Category badge */}
+        <div
+          className="absolute bottom-3 left-3 text-white text-[10px] md:text-[11px] px-2 py-0.5 md:px-2.5 md:py-1 tracking-wide"
+          style={{ backgroundColor: '#680018' }}
+        >
+          {product.category}
+        </div>
+        {/* "Новинка" sash */}
+        {product.isNew && (
+          <div
+            className="absolute top-3 -left-6 text-white text-[10px] font-medium px-6 py-0.5 -rotate-45 text-center w-28 shadow-sm tracking-wide"
+            style={{ backgroundColor: '#1A1314' }}
+          >
+            Новинка
+          </div>
+        )}
+      </div>
+      <div className="mt-3">
+        <h3 className="text-xs md:text-sm font-medium text-[#1A1314] line-clamp-1 group-hover:text-[#680018] transition-colors">
+          {product.name}
+        </h3>
+      </div>
+    </button>
+  );
+}
+
+/* ──────────────── HomePage ──────────────── */
+function HomePage({
+  onNavigate,
+  onSelectProduct,
+}: {
+  onNavigate: (page: PageView) => void;
+  onSelectProduct: (product: Product) => void;
+}) {
+  const recommendedProducts = products.slice(0, 10);
+  const [slideIndex, setSlideIndex] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setSlideIndex((i) => (i + 1) % heroSlides.length);
+    }, 6000);
+    return () => clearInterval(t);
+  }, []);
+
+  const slide = heroSlides[slideIndex];
+  const next = () => setSlideIndex((i) => (i + 1) % heroSlides.length);
+  const prev = () => setSlideIndex((i) => (i - 1 + heroSlides.length) % heroSlides.length);
+
+  return (
+    <>
+      {/* Hero Section */}
+      <section
+        className="relative overflow-hidden"
+        style={{ backgroundColor: '#EFE6E1', minHeight: '500px' }}
+      >
+        <div className="absolute inset-0">
+          {heroSlides.map((s, i) => (
+            <div
+              key={s.image}
+              className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out"
+              style={{
+                backgroundImage: `url(${s.image})`,
+                backgroundPosition: 'right center',
+                opacity: i === slideIndex ? 1 : 0,
+              }}
+            />
+          ))}
+          {/* Left-side beige gradient */}
+          <div
+            className="absolute inset-y-0 left-0 w-full lg:w-2/3 pointer-events-none"
+            style={{
+              background:
+                'linear-gradient(to right, #EFE6E1 0%, #EFE6E1 35%, rgba(239,230,225,0.85) 50%, rgba(239,230,225,0) 75%)',
+            }}
+          />
+        </div>
+
+        <div className="relative max-w-[1400px] mx-auto px-4 md:px-12 py-16 md:py-28 lg:py-32 flex flex-col justify-center w-full lg:w-1/2 min-h-[500px] md:min-h-[600px]">
+          <h1
+            className="text-3xl md:text-5xl lg:text-[56px] font-bold text-[#1A1314] mb-4 md:mb-6 leading-[1.1]"
+          >
+            {slide.title}
+          </h1>
+          <p className="text-sm md:text-base lg:text-lg text-[#1A1314]/85 mb-8 md:mb-10 max-w-xl leading-relaxed">
+            {slide.subtitle}
+          </p>
+
+          {/* Carousel controls */}
+          <div className="flex items-center gap-4 md:gap-5 mt-2 md:mt-4">
+            <button
+              onClick={prev}
+              className="text-[#680018] hover:text-[#2D020C] transition-colors"
+              aria-label="Назад"
+            >
+              <ArrowLeft className="w-6 h-6 md:w-7 md:h-7" strokeWidth={1.5} />
+            </button>
+            <div className="flex gap-2 md:gap-2.5 items-center">
+              {heroSlides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSlideIndex(i)}
+                  className="transition-all"
+                  aria-label={`Слайд ${i + 1}`}
+                >
+                  {i === slideIndex ? (
+                    <span className="block w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border-2 border-[#680018] flex items-center justify-center">
+                      <span className="block w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#680018]"></span>
+                    </span>
+                  ) : (
+                    <span className="block w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-[#680018]/40 hover:bg-[#680018]"></span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={next}
+              className="text-[#680018] hover:text-[#2D020C] transition-colors"
+              aria-label="Вперёд"
+            >
+              <ArrowRight className="w-6 h-6 md:w-7 md:h-7" strokeWidth={1.5} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Recommended Products Section */}
+      <section className="py-12 md:py-20 px-4 md:px-12 max-w-[1400px] mx-auto">
+        <div className="flex justify-between items-end mb-8 md:mb-10">
+          <div>
+            <h2 className="text-2xl md:text-4xl font-medium text-[#1A1314] mb-1 md:mb-2">
+              Рекомендуемые продукты
+            </h2>
+            <p className="text-[#706567] text-xs md:text-sm">
+              Подборка необходимых вещей для каждого гардероба
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate('catalog')}
+            className="text-xs md:text-sm font-medium flex items-center gap-1 text-[#1A1314] hover:text-[#680018] transition-colors"
+          >
+            Все <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+          {recommendedProducts.map((product) => (
+            <ProductCard key={product.id} product={product} onSelect={onSelectProduct} />
+          ))}
+        </div>
+      </section>
+    </>
+  );
+}
+
+/* ──────────────── CatalogPage ──────────────── */
+function CatalogPage({
+  onSelectProduct,
+}: {
+  onSelectProduct: (product: Product) => void;
+}) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
+  const [sortOpen, setSortOpen] = useState(false);
+  const [sortBy, setSortBy] = useState('newest');
+
+  const toggleCollection = (col: string) => {
+    setSelectedCollections((prev) =>
+      prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
+    );
+  };
+
+  const filteredProducts = products
+    .filter((p) => {
+      if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (selectedCollections.length > 0 && !selectedCollections.includes(p.collection)) return false;
+      if (selectedCollections.includes('Новинки') && !p.isNew) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'price-asc': return a.price - b.price;
+        case 'price-desc': return b.price - a.price;
+        case 'popular': return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
+        default: return 0;
+      }
+    });
+
+  const sortOptions = [
+    { value: 'newest', label: 'По новизне' },
+    { value: 'price-asc', label: 'Цена: по возрастанию' },
+    { value: 'price-desc', label: 'Цена: по убыванию' },
+    { value: 'popular', label: 'Популярные' },
+  ];
+
+  return (
+    <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8 md:py-10">
+      {/* Header */}
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-3xl md:text-4xl font-medium text-[#1A1314] mb-2">Каталог товаров</h1>
+        <p className="text-[#706567] text-xs md:text-sm">Подборка необходимых вещей для каждого гардероба</p>
+      </div>
+
+      <div className="flex gap-6 md:gap-10 flex-col md:flex-row">
+        {/* Sidebar */}
+        <aside className="w-full md:w-56 lg:w-64 flex-shrink-0">
+          <div className="flex items-center justify-between font-medium mb-5 md:mb-6 text-[#1A1314]">
+            <span className="text-base md:text-lg">Фильтры</span>
+            <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5 text-[#1A1314]" />
+          </div>
+
+          <div className="mb-6 md:mb-8">
+            <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4 text-[#1A1314]">Коллекции</h3>
+            <ul className="space-y-2.5 md:space-y-3">
+              {collections.map((col) => (
+                <li key={col} className="flex items-center justify-between">
+                  <label className="text-xs md:text-sm text-[#1A1314]/80 cursor-pointer">
+                    {col}
+                  </label>
+                  <input
+                    type="checkbox"
+                    checked={selectedCollections.includes(col)}
+                    onChange={() => toggleCollection(col)}
+                    className="w-3.5 h-3.5 md:w-4 md:h-4 rounded border-gray-300 cursor-pointer accent-[#680018]"
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Price Filter */}
+          <div>
+            <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4 text-[#1A1314]">Цена</h3>
+            <div className="w-full relative h-1 bg-gray-200 rounded mb-3 md:mb-4">
+              <div
+                className="absolute left-0 right-0 h-1 rounded"
+                style={{ backgroundColor: '#680018' }}
+              ></div>
+              <div
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border-2 border-white shadow-md"
+                style={{ backgroundColor: '#680018' }}
+              ></div>
+              <div
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border-2 border-white shadow-md"
+                style={{ backgroundColor: '#680018' }}
+              ></div>
+            </div>
+            <div className="flex justify-between text-[10px] md:text-xs text-[#706567]">
+              <span>0 $</span>
+              <span>100 000 $</span>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex-1">
+          {/* Search and Sort Row */}
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-5 md:mb-6 gap-3 md:gap-6">
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                placeholder="Поиск продуктов"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white text-[#1A1314] text-xs md:text-sm rounded-md pl-9 md:pl-10 pr-4 py-2.5 md:py-3 outline-none border border-gray-200 focus:ring-1 focus:ring-[#680018] focus:border-[#680018]"
+              />
+              <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400" />
+            </div>
+
+            <div className="relative">
+              <button
+                onClick={() => setSortOpen(!sortOpen)}
+                className="w-full sm:w-52 md:w-64 border border-gray-200 bg-white rounded-md p-2.5 md:p-3 flex justify-between items-center cursor-pointer"
+              >
+                <span className="text-xs md:text-sm text-[#1A1314]">
+                  {sortOptions.find((o) => o.value === sortBy)?.label || 'Сортировка'}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-500" />
+              </button>
+              {sortOpen && (
+                <div className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-md mt-1 shadow-lg z-10">
+                  <ul className="py-2 text-xs md:text-sm text-[#1A1314]">
+                    {sortOptions.map((opt) => (
+                      <li key={opt.value}>
+                        <button
+                          onClick={() => { setSortBy(opt.value); setSortOpen(false); }}
+                          className="w-full px-3 md:px-4 py-2 hover:bg-[#F9F7F5] flex justify-between items-center text-left"
+                        >
+                          {opt.label}
+                          {sortBy === opt.value && (
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#680018]" />
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Products Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} onSelect={onSelectProduct} />
+            ))}
+          </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-16 text-[#706567]">
+              <p className="text-lg">Товары не найдены</p>
+              <p className="text-sm mt-2">Попробуйте изменить фильтры</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────── ProductPage ──────────────── */
+function ProductPage({
+  product,
+  onNavigate,
+  onSelectProduct,
+}: {
+  product: Product;
+  onNavigate: (page: PageView) => void;
+  onSelectProduct: (product: Product) => void;
+}) {
+  const [quantity, setQuantity] = useState(1);
+  const [activeImg, setActiveImg] = useState(0);
+  const addToCart = useCartStore((s) => s.addItem);
+
+  const gallery = [
+    product.image,
+    ...productGallery.filter((p) => p !== product.image),
+  ].slice(0, 4);
+
+  const recommendedProducts = products.filter((p) => p.id !== product.id).slice(0, 8);
+
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+    toast.success(`${product.name} добавлен в корзину`, {
+      description: `Количество: ${quantity}`,
+    });
+  };
+
+  return (
+    <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8 md:py-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-20 mb-16 md:mb-20">
+        {/* Large Image */}
+        <div
+          className="aspect-[3/4] flex items-center justify-center overflow-hidden rounded-sm border border-gray-100"
+          style={{ backgroundColor: '#FFFFFF' }}
+        >
+          <img
+            src={gallery[activeImg]}
+            alt={product.name}
+            className="w-full h-full object-cover object-center"
+          />
+        </div>
+
+        {/* Product Info */}
+        <div>
+          {/* Thumbnails Row */}
+          <div className="grid grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-10">
+            {gallery.map((img, i) => (
+              <button
+                key={img + i}
+                onClick={() => setActiveImg(i)}
+                className={
+                  'aspect-[3/4] overflow-hidden transition-all rounded-sm ' +
+                  (activeImg === i
+                    ? 'ring-2 ring-[#680018]'
+                    : 'ring-1 ring-transparent hover:ring-[#680018]/40')
+                }
+                style={{ backgroundColor: '#FFFFFF' }}
+              >
+                <img
+                  src={img}
+                  alt={`${product.name} ${i + 1}`}
+                  className="w-full h-full object-cover object-center"
+                />
+              </button>
+            ))}
+          </div>
+
+          <p className="text-xs md:text-sm text-[#680018] mb-1.5 md:mb-2 tracking-wide">
+            {product.category}
+          </p>
+          <h1 className="text-2xl md:text-4xl font-medium text-[#1A1314] mb-3 md:mb-4">
+            {product.name}
+          </h1>
+          <p className="text-xl md:text-2xl font-light text-[#1A1314] mb-4 md:mb-6">
+            ${product.price.toFixed(2)}
+          </p>
+
+          {product.description && (
+            <p className="text-sm md:text-[15px] text-[#1A1314]/70 mb-6 md:mb-8 leading-relaxed">
+              {product.description}
+            </p>
+          )}
+
+          <div className="mb-6 md:mb-8">
+            <p className="text-xs md:text-sm text-[#706567] mb-2.5 md:mb-3 block">Количество</p>
+            <div className="flex items-center">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="w-9 h-9 md:w-11 md:h-11 border flex items-center justify-center transition-colors hover:bg-[#F2E5D5] text-sm md:text-base"
+                style={{ backgroundColor: '#FCF7F1', borderColor: '#EDDCCC' }}
+              >
+                −
+              </button>
+              <div
+                className="w-10 h-9 md:w-14 md:h-11 border-t border-b bg-white flex items-center justify-center text-xs md:text-sm font-medium"
+                style={{ borderColor: '#EDDCCC' }}
+              >
+                {quantity}
+              </div>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="w-9 h-9 md:w-11 md:h-11 border flex items-center justify-center transition-colors hover:bg-[#F2E5D5] text-sm md:text-base"
+                style={{ backgroundColor: '#FCF7F1', borderColor: '#EDDCCC' }}
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <button
+            onClick={handleAddToCart}
+            className="w-full text-white py-3 md:py-4 font-medium transition-colors tracking-wide rounded-sm hover:bg-[#680018]"
+            style={{ backgroundColor: '#2D020C' }}
+          >
+            Добавить в корзину
+          </button>
+        </div>
+      </div>
+
+      {/* Recommended Products Section */}
+      <div className="mt-12 md:mt-24">
+        <div className="flex justify-between items-end mb-6 md:mb-8">
+          <h2 className="text-2xl md:text-3xl font-medium text-[#1A1314]">
+            Рекомендуемые продукты
+          </h2>
+          <button
+            onClick={() => onNavigate('catalog')}
+            className="text-[#680018] text-xs md:text-sm font-medium flex items-center gap-1 hover:underline"
+          >
+            Все →
+          </button>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+          {recommendedProducts.map((p) => (
+            <ProductCard key={p.id} product={p} onSelect={onSelectProduct} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────── CartPage ──────────────── */
+function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
+  const items = useCartStore((s) => s.items);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const total = useCartStore((s) => s.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0));
+  const [paymentMethod, setPaymentMethod] = useState('payme');
+
+  const handleOrder = () => {
+    if (items.length === 0) {
+      toast.error('Корзина пуста');
+      return;
+    }
+    toast.success('Заказ оформлен!', {
+      description: `Общая сумма: ${total.toFixed(0)} $`,
+    });
+  };
+
+  return (
+    <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8 md:py-12">
+      <div className="mb-8 md:mb-12">
+        <h1 className="text-3xl md:text-4xl font-medium text-[#1A1314] mb-2">
+          Корзина оформление заказа
+        </h1>
+        <p className="text-[#680018] text-xs md:text-sm">Оформление заказа</p>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
+        {/* Left: Cart Items */}
+        <div className="flex-1 bg-white p-4 md:p-6 shadow-sm rounded-md border border-gray-100">
+          {/* Table header */}
+          <div className="hidden md:grid grid-cols-12 text-xs md:text-sm font-medium text-[#1A1314] border-b border-gray-200 pb-3 md:pb-4 mb-3 md:mb-4">
+            <div className="col-span-2">Фото</div>
+            <div className="col-span-4">Наименование продукта</div>
+            <div className="col-span-3 text-center">Количество</div>
+            <div className="col-span-3 text-right">Общая сумма</div>
+          </div>
+
+          <div className="space-y-4 md:space-y-6">
+            {items.map((item) => (
+              <div
+                key={item.product.id}
+                className="grid grid-cols-12 items-center text-xs md:text-sm gap-2"
+              >
+                {/* Photo */}
+                <div className="col-span-3 md:col-span-2">
+                  <img
+                    src={item.product.image}
+                    alt={item.product.name}
+                    className="w-12 h-16 md:w-16 md:h-20 object-cover rounded-sm"
+                    style={{ backgroundColor: '#FFFFFF' }}
+                  />
+                </div>
+                {/* Name */}
+                <div className="col-span-4 md:col-span-4 text-sm md:text-base font-medium text-[#1A1314]">
+                  {item.product.name}
+                </div>
+                {/* Quantity */}
+                <div className="col-span-3 flex justify-center items-center">
+                  <div className="flex items-center">
+                    <button
+                      onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                      className="w-7 h-7 md:w-9 md:h-9 border flex items-center justify-center hover:bg-[#F2E5D5] transition-colors text-xs md:text-sm"
+                      style={{ backgroundColor: '#FCF7F1', borderColor: '#EDDCCC' }}
+                    >
+                      −
+                    </button>
+                    <div
+                      className="w-8 h-7 md:w-12 md:h-9 border-t border-b bg-white flex items-center justify-center font-medium text-xs md:text-sm"
+                      style={{ borderColor: '#EDDCCC' }}
+                    >
+                      {item.quantity}
+                    </div>
+                    <button
+                      onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                      className="w-7 h-7 md:w-9 md:h-9 border flex items-center justify-center hover:bg-[#F2E5D5] transition-colors text-xs md:text-sm"
+                      style={{ backgroundColor: '#FCF7F1', borderColor: '#EDDCCC' }}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                {/* Total + Delete */}
+                <div className="col-span-2 flex justify-end items-center gap-2 md:gap-6">
+                  <span className="text-sm md:text-lg font-medium text-[#1A1314]">
+                    {(item.product.price * item.quantity).toFixed(0)} $
+                  </span>
+                  <button
+                    onClick={() => removeItem(item.product.id)}
+                    className="text-[#680018] hover:text-[#2D020C] transition-colors"
+                    aria-label="Удалить"
+                  >
+                    <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {items.length === 0 && (
+              <div className="text-center py-10 md:py-12">
+                <p className="text-[#706567] text-base md:text-lg mb-4">Корзина пуста</p>
+                <button
+                  onClick={() => onNavigate('catalog')}
+                  className="text-[#680018] text-sm font-medium hover:underline"
+                >
+                  Перейти в каталог →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right: Checkout Form */}
+        <div className="w-full lg:w-[380px] md:w-[400px]">
+          <div
+            className="p-5 md:p-8 rounded-md border border-gray-200 shadow-sm"
+            style={{ backgroundColor: '#F9F7F5' }}
+          >
+            <div className="flex justify-between items-center mb-5 md:mb-6">
+              <h2 className="text-lg md:text-xl font-medium text-[#1A1314]">
+                Оформление заказа
+              </h2>
+              <Wallet className="w-4 h-4 md:w-5 md:h-5 text-[#706567]" />
+            </div>
+
+            <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Имя"
+                  className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
+                  style={{ backgroundColor: '#EFE6E1' }}
+                />
+                <User className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-[#680018]" />
+              </div>
+              <div className="relative">
+                <input
+                  type="tel"
+                  placeholder="Телефон"
+                  className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
+                  style={{ backgroundColor: '#EFE6E1' }}
+                />
+                <Phone className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-[#680018]" />
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Адрес"
+                  className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
+                  style={{ backgroundColor: '#EFE6E1' }}
+                />
+                <MapPin className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-[#680018]" />
+              </div>
+            </div>
+
+            <div className="mb-6 md:mb-8">
+              <h3 className="text-xs md:text-sm text-[#706567] mb-2.5 md:mb-3">Методы оплаты</h3>
+              <div className="grid grid-cols-2 gap-2.5 md:gap-3 mb-2.5 md:mb-3">
+                <button
+                  onClick={() => setPaymentMethod('payme')}
+                  className={
+                    'border-2 bg-white rounded-md py-2.5 md:py-3 flex items-center justify-center font-bold relative text-sm md:text-lg ' +
+                    (paymentMethod === 'payme' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
+                  }
+                  style={{ color: '#38B2AC' }}
+                >
+                  <span className="italic">payme</span>
+                  {paymentMethod === 'payme' && (
+                    <div
+                      className="absolute top-1 right-1 w-3 h-3 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: '#680018' }}
+                    >
+                      <svg viewBox="0 0 10 10" className="w-2 h-2 fill-white">
+                        <path d="M3.5 7.5L1.5 5.5L2.2 4.8L3.5 6.1L7.8 1.8L8.5 2.5L3.5 7.5Z" />
+                      </svg>
+                    </div>
+                  )}
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('click')}
+                  className={
+                    'border-2 bg-white rounded-md py-2.5 md:py-3 flex items-center justify-center font-bold text-sm md:text-lg ' +
+                    (paymentMethod === 'click' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
+                  }
+                  style={{ color: '#3182CE' }}
+                >
+                  click
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5 md:gap-3">
+                <button
+                  onClick={() => setPaymentMethod('cash')}
+                  className={
+                    'rounded-md py-2.5 md:py-3 flex items-center justify-center flex-col gap-1 text-[10px] md:text-sm text-[#1A1314] border-2 ' +
+                    (paymentMethod === 'cash' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
+                  }
+                  style={{ backgroundColor: '#F9F5F0' }}
+                >
+                  <Wallet className="w-4 h-4 md:w-5 md:h-5 text-[#680018]" />
+                  Наличные
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('card')}
+                  className={
+                    'rounded-md py-2.5 md:py-3 flex items-center justify-center flex-col gap-1 text-[10px] md:text-sm text-[#1A1314] border-2 ' +
+                    (paymentMethod === 'card' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
+                  }
+                  style={{ backgroundColor: '#F9F5F0' }}
+                >
+                  <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-[#680018]" />
+                  Карта
+                </button>
+              </div>
+            </div>
+
+            {/* Total */}
+            {items.length > 0 && (
+              <div className="flex justify-between items-center mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
+                <span className="text-sm text-[#706567]">Итого:</span>
+                <span className="text-lg md:text-xl font-medium text-[#1A1314]">
+                  {total.toFixed(0)} $
+                </span>
+              </div>
+            )}
+
+            <button
+              onClick={handleOrder}
+              className="w-full text-white py-3 md:py-4 font-medium rounded-md transition-colors tracking-wide hover:bg-[#680018]"
+              style={{ backgroundColor: '#2D020C' }}
+            >
+              Оформить заказ
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────── Main Page ──────────────── */
+export default function Home() {
+  const [currentPage, setCurrentPage] = useState<PageView>('home');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const navigate = useCallback((page: PageView) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const selectProduct = useCallback((product: Product) => {
+    setSelectedProduct(product);
+    setCurrentPage('product');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F9F7F5' }}>
+      <Header onNavigate={navigate} currentPage={currentPage} />
+      <main className="flex-1">
+        {currentPage === 'home' && (
+          <HomePage onNavigate={navigate} onSelectProduct={selectProduct} />
+        )}
+        {currentPage === 'catalog' && (
+          <CatalogPage onSelectProduct={selectProduct} />
+        )}
+        {currentPage === 'product' && selectedProduct && (
+          <ProductPage product={selectedProduct} onNavigate={navigate} onSelectProduct={selectProduct} />
+        )}
+        {currentPage === 'cart' && (
+          <CartPage onNavigate={navigate} />
+        )}
+      </main>
+      <Footer onNavigate={navigate} />
+    </div>
+  );
+}
