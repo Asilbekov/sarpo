@@ -48,7 +48,7 @@ function Header({ onNavigate, currentPage }: { onNavigate: (page: PageView) => v
           className="flex items-center gap-3 py-3"
         >
           <img
-            src="/images/ai-generated/sarpo_logo.png"
+            src="/images/sarpo-logo-transparent.svg"
             alt="SARPO"
             className="h-10 w-auto select-none"
             draggable={false}
@@ -284,16 +284,16 @@ function HomePage({
             </p>
           </div>
 
-          {/* Carousel controls */}
-          <div className="flex items-center gap-5 md:gap-6 mt-auto">
+          {/* Carousel controls — centered on x-axis */}
+          <div className="flex items-center justify-center gap-5 md:gap-6 mt-auto w-full">
             <button
               onClick={prev}
               className="text-[#680018] hover:text-[#2D020C] transition-colors p-1"
               aria-label="Назад"
             >
-              <ArrowLeft className="w-7 h-7 md:w-8 md:h-8" strokeWidth={1.5} />
+              <ArrowLeft className="w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
             </button>
-            <div className="flex gap-3 items-center">
+            <div className="flex gap-4 items-center">
               {heroSlides.map((_, i) => (
                 <button
                   key={i}
@@ -302,11 +302,11 @@ function HomePage({
                   aria-label={`Слайд ${i + 1}`}
                 >
                   {i === slideIndex ? (
-                    <span className="block w-4 h-4 rounded-full border-2 border-[#680018] flex items-center justify-center">
-                      <span className="block w-2 h-2 rounded-full bg-[#680018]"></span>
+                    <span className="block w-8 h-8 rounded-full border-2 border-[#680018] flex items-center justify-center">
+                      <span className="block w-4 h-4 rounded-full bg-[#680018]"></span>
                     </span>
                   ) : (
-                    <span className="block w-3 h-3 rounded-full bg-[#680018]/40 hover:bg-[#680018]"></span>
+                    <span className="block w-6 h-6 rounded-full bg-[#680018]/40 hover:bg-[#680018]"></span>
                   )}
                 </button>
               ))}
@@ -316,7 +316,7 @@ function HomePage({
               className="text-[#680018] hover:text-[#2D020C] transition-colors p-1"
               aria-label="Вперёд"
             >
-              <ArrowRight className="w-7 h-7 md:w-8 md:h-8" strokeWidth={1.5} />
+              <ArrowRight className="w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
             </button>
           </div>
         </div>
