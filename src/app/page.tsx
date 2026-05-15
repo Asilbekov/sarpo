@@ -48,7 +48,7 @@ function Header({ onNavigate, currentPage }: { onNavigate: (page: PageView) => v
           className="flex items-center gap-3 py-3"
         >
           <img
-            src="/images/processed/sarpo_logo.png"
+            src="/images/ai-generated/sarpo_logo.png"
             alt="SARPO"
             className="h-10 w-auto select-none"
             draggable={false}

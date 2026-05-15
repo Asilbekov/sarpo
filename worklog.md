@@ -40,3 +40,36 @@ Stage Summary:
 - Product prices now shown on cards
 - Recommended products section matches target with subtitle and 5 columns
 - All design differences from Russian mockups addressed
+
+---
+Task ID: 3
+Agent: Main
+Task: Use AI image generation for ALL product images and logo
+
+Work Log:
+- Generated SARPO logo using z-ai image generation CLI (ornate circular medallion, gold & burgundy)
+- Generated 9 unique product images using AI:
+  - product_blue_grey.jpg - blue-grey traditional Uzbek dress
+  - product_white_gold.jpg - white outfit with gold embroidery
+  - product_black_embroidered.jpg - black outfit with colorful Suzani
+  - product_mint_gold.jpg - mint green dress with gold details
+  - product_green.jpg - bright green traditional outfit
+  - product_burgundy_sheer.jpg - burgundy sheer fabric outfit
+  - product_white_cape.jpg - white cape-style outfit
+  - product_beige_embroidered.jpg - beige cream embroidered outfit
+  - product_burgundy_dress.jpg - full-length burgundy dress
+- Generated 3 hero carousel images using AI:
+  - hero_three_women.jpg - three women on stairs
+  - hero_sage_green.jpg - woman in sage green dress
+  - hero_pink_seated.jpg - woman in pink dress seated
+- Post-processed all images: logo transparency, white background enforcement
+- Updated sarpo-data.ts: all image paths → /images/ai-generated/
+- Updated page.tsx: logo path → /images/ai-generated/sarpo_logo.png
+- VLM evaluation: 7-8/10, professional quality, clean white backgrounds, no AI artifacts
+
+Stage Summary:
+- ALL images now AI-generated (9 products + 3 hero + 1 logo = 13 total)
+- Product images: pure white backgrounds, faces clearly visible, no artifacts
+- Logo: ornate medallion design, transparent background, visible on dark header
+- Hero images: professional fashion photography style
+- No more black backgrounds on any image
