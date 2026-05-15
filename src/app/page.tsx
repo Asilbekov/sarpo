@@ -283,7 +283,7 @@ function HomePage({
       {/* Hero Section */}
       <section
         className="relative overflow-hidden"
-        style={{ backgroundColor: '#EFE6E1', minHeight: '360px' }}
+        style={{ backgroundColor: '#EFE6E1', minHeight: '420px' }}
       >
         <div className="absolute inset-0">
           {heroSlides.map((s, i) => (
@@ -308,7 +308,7 @@ function HomePage({
           />
         </div>
 
-        <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-14 md:py-20 lg:py-24 flex flex-col justify-center min-h-[360px] md:min-h-[420px]">
+        <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-14 md:py-20 lg:py-24 flex flex-col justify-center min-h-[420px] md:min-h-[500px]">
           <div className="w-full lg:w-1/2 xl:w-2/5">
             <h1
               className="text-2xl md:text-4xl lg:text-[44px] font-bold text-[#1A1314] mb-4 md:mb-6 leading-[1.1]"
