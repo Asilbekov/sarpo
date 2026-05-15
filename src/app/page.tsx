@@ -79,20 +79,14 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
       >
         <button
           onClick={() => onNavigate('home')}
-          className="flex items-center gap-3 py-3"
+          className="flex items-center py-3"
         >
           <img
             src="/images/sarpo_logo.svg"
             alt="SARPO"
-            className="h-14 w-auto select-none"
+            className="h-12 md:h-14 w-auto select-none"
             draggable={false}
           />
-          <span
-            className="text-2xl md:text-3xl font-medium tracking-[0.2em] text-white"
-            style={{ fontFamily: 'Georgia, serif' }}
-          >
-            SARPO
-          </span>
         </button>
 
         <div className="flex items-center gap-4">

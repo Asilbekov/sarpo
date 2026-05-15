@@ -108,3 +108,20 @@ Stage Summary:
 - Price range slider is now fully interactive with drag handles
 - Products are filtered by the selected price range
 - Price labels update in real-time as sliders are moved
+
+---
+Task ID: 3
+Agent: main
+Task: Save user-provided proper vector SVG logo and update header
+
+Work Log:
+- Copied "Sarpo logo var 4 1.txt" from upload folder to public/images/sarpo_logo.svg
+- The SVG is a proper vector with path data (ornamental design + SARPO text), replacing the old base64-embedded PNG
+- Removed the separate "SARPO" text span from the header since the SVG already contains the text
+- Adjusted logo size to h-12 md:h-14 (was h-14 only)
+- The SVG has white fill which displays correctly on the #680018 ruby background
+
+Stage Summary:
+- Proper vector SVG logo saved to public/images/sarpo_logo.svg
+- Removed redundant SARPO text from header (logo SVG has its own text)
+- All three pending tasks completed: header color, price slider, SVG logo
