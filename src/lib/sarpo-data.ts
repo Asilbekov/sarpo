@@ -142,17 +142,17 @@ export interface HeroSlide {
 
 export const heroSlides: HeroSlide[] = [
   {
-    image: '/images/ai-generated/hero_three_women.jpg',
+    image: '/images/hero_three_women.jpg',
     title: 'SARPO — Baxt ulashamiz!',
     subtitle: 'Toshkent bo\'ylab keng tarmoqli filiallarimizda sizni eng baxtli lahzalaringiz uchun hamroh bo\'ladigan liboslar kutmoqda. Biz bilan o\'zingizga bo\'lgan ishonchni his eting.',
   },
   {
-    image: '/images/ai-generated/hero_sage_green.jpg',
+    image: '/images/hero_sage_green.jpg',
     title: 'Yangi mavsum — Yangi ohanglar',
     subtitle: 'Klassik naqshlar va zamonaviy chiziqlar uyg\'unligi. Har bir libos — siz uchun maxsus tikilgan tarix.',
   },
   {
-    image: '/images/ai-generated/hero_pink_seated.jpg',
+    image: '/images/hero_pink_seated.jpg',
     title: 'Tantana uchun yaratilgan',
     subtitle: 'Eng nozik gulli tikuvlar, qo\'l ishi naqshlari — bayram va to\'y kunlaringiz uchun.',
   },

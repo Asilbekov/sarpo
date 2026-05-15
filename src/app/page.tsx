@@ -26,8 +26,9 @@ import { toast } from 'sonner';
 type PageView = 'home' | 'catalog' | 'product' | 'cart';
 
 /* ──────────────── Header ──────────────── */
-function Header({ onNavigate, currentPage }: { onNavigate: (page: PageView) => void; currentPage: PageView }) {
+function Header({ onNavigate, currentPage, onSearch }: { onNavigate: (page: PageView) => void; currentPage: PageView; onSearch: (query: string) => void }) {
   const cartCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.quantity, 0));
+  const [headerSearch, setHeaderSearch] = useState('');
   const navLinks = [
     { title: 'Весенняя коллекция', collection: 'spring' },
     { title: 'Летняя коллекция', collection: 'summer' },
@@ -35,6 +36,13 @@ function Header({ onNavigate, currentPage }: { onNavigate: (page: PageView) => v
     { title: 'Зимняя коллекция', collection: 'winter' },
     { title: 'Новинки', collection: 'new' },
   ];
+
+  const handleHeaderSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (headerSearch.trim()) {
+      onSearch(headerSearch.trim());
+    }
+  };
 
   return (
     <header className="w-full flex flex-col sticky top-0 z-50">
@@ -62,14 +70,16 @@ function Header({ onNavigate, currentPage }: { onNavigate: (page: PageView) => v
         </button>
 
         <div className="flex items-center gap-4">
-          <div className="relative hidden md:block">
+          <form onSubmit={handleHeaderSearch} className="relative hidden md:block">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search"
+              value={headerSearch}
+              onChange={(e) => setHeaderSearch(e.target.value)}
               className="bg-white text-gray-800 text-sm rounded-full pl-10 pr-5 py-2.5 w-[280px] lg:w-[320px] outline-none border-0 focus:ring-2 focus:ring-white/30"
             />
-          </div>
+          </form>
           <button
             onClick={() => onNavigate('cart')}
             className="bg-white p-2.5 rounded-full relative hover:scale-105 transition-transform"
@@ -247,7 +257,7 @@ function HomePage({
       {/* Hero Section */}
       <section
         className="relative overflow-hidden"
-        style={{ backgroundColor: '#EFE6E1', minHeight: '600px' }}
+        style={{ backgroundColor: '#EFE6E1', minHeight: '460px' }}
       >
         <div className="absolute inset-0">
           {heroSlides.map((s, i) => (
@@ -272,14 +282,14 @@ function HomePage({
           />
         </div>
 
-        <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-20 md:py-28 lg:py-36 flex flex-col justify-center min-h-[600px] md:min-h-[700px]">
+        <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-14 md:py-20 lg:py-24 flex flex-col justify-center min-h-[460px] md:min-h-[540px]">
           <div className="w-full lg:w-1/2 xl:w-2/5">
             <h1
-              className="text-3xl md:text-5xl lg:text-[56px] font-bold text-[#1A1314] mb-5 md:mb-8 leading-[1.1]"
+              className="text-2xl md:text-4xl lg:text-[44px] font-bold text-[#1A1314] mb-4 md:mb-6 leading-[1.1]"
             >
               {slide.title}
             </h1>
-            <p className="text-sm md:text-base lg:text-lg text-[#1A1314]/85 mb-10 md:mb-14 max-w-lg leading-relaxed">
+            <p className="text-xs md:text-sm lg:text-base text-[#1A1314]/85 mb-8 md:mb-10 max-w-lg leading-relaxed">
               {slide.subtitle}
             </p>
           </div>
@@ -354,10 +364,12 @@ function HomePage({
 /* ──────────────── CatalogPage ──────────────── */
 function CatalogPage({
   onSelectProduct,
+  initialSearch = '',
 }: {
   onSelectProduct: (product: Product) => void;
+  initialSearch?: string;
 }) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
@@ -906,6 +918,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<PageView>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [catalogSearch, setCatalogSearch] = useState('');
 
   const navigate = useCallback((page: PageView) => {
     setCurrentPage(page);
@@ -920,13 +933,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F9F7F5' }}>
-      <Header onNavigate={navigate} currentPage={currentPage} />
+      <Header onNavigate={navigate} currentPage={currentPage} onSearch={(query) => { setCatalogSearch(query); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
       <main className="flex-1">
         {currentPage === 'home' && (
           <HomePage onNavigate={navigate} onSelectProduct={selectProduct} />
         )}
         {currentPage === 'catalog' && (
-          <CatalogPage onSelectProduct={selectProduct} />
+          <CatalogPage onSelectProduct={selectProduct} initialSearch={catalogSearch} />
         )}
         {currentPage === 'product' && selectedProduct && (
           <ProductPage product={selectedProduct} onNavigate={navigate} onSelectProduct={selectProduct} />
