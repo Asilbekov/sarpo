@@ -29,6 +29,7 @@ type PageView = 'home' | 'catalog' | 'product' | 'cart';
 function Header({ onNavigate, currentPage, onSearch }: { onNavigate: (page: PageView) => void; currentPage: PageView; onSearch: (query: string) => void }) {
   const cartCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.quantity, 0));
   const [headerSearch, setHeaderSearch] = useState('');
+  const [visible, setVisible] = useState(true);
   const navLinks = [
     { title: 'Весенняя коллекция', collection: 'spring' },
     { title: 'Летняя коллекция', collection: 'summer' },
@@ -44,8 +45,33 @@ function Header({ onNavigate, currentPage, onSearch }: { onNavigate: (page: Page
     }
   };
 
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          if (currentScrollY > lastScrollY && currentScrollY > 80) {
+            setVisible(false);
+          } else {
+            setVisible(true);
+          }
+          lastScrollY = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className="w-full flex flex-col sticky top-0 z-50">
+    <header
+      className="w-full flex flex-col sticky top-0 z-50 transition-transform duration-300 ease-in-out"
+      style={{ transform: visible ? 'translateY(0)' : 'translateY(-100%)' }}
+    >
       {/* Top bar — deep wine background */}
       <div
         className="text-white px-4 md:px-12 flex items-center justify-between"
@@ -257,7 +283,7 @@ function HomePage({
       {/* Hero Section */}
       <section
         className="relative overflow-hidden"
-        style={{ backgroundColor: '#EFE6E1', minHeight: '460px' }}
+        style={{ backgroundColor: '#EFE6E1', minHeight: '360px' }}
       >
         <div className="absolute inset-0">
           {heroSlides.map((s, i) => (
@@ -282,7 +308,7 @@ function HomePage({
           />
         </div>
 
-        <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-14 md:py-20 lg:py-24 flex flex-col justify-center min-h-[460px] md:min-h-[540px]">
+        <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-14 md:py-20 lg:py-24 flex flex-col justify-center min-h-[360px] md:min-h-[420px]">
           <div className="w-full lg:w-1/2 xl:w-2/5">
             <h1
               className="text-2xl md:text-4xl lg:text-[44px] font-bold text-[#1A1314] mb-4 md:mb-6 leading-[1.1]"
