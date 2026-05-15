@@ -969,7 +969,7 @@ export default function Home() {
           <HomePage onNavigate={navigate} onSelectProduct={selectProduct} />
         )}
         {currentPage === 'catalog' && (
-          <CatalogPage onSelectProduct={selectProduct} initialSearch={catalogSearch} initialCollection={catalogCollection} />
+          <CatalogPage key={`${catalogSearch}-${catalogCollection}`} onSelectProduct={selectProduct} initialSearch={catalogSearch} initialCollection={catalogCollection} />
         )}
         {currentPage === 'product' && selectedProduct && (
           <ProductPage product={selectedProduct} onNavigate={navigate} onSelectProduct={selectProduct} />
