@@ -32,10 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
-
 
 # typescript
 *.tsbuildinfo
@@ -48,7 +48,31 @@ dev.log
 dev.out.log
 test
 prompt
-
 server.log
+
+# Database
+/db/*.db
+/db/*.db-journal
+
+# Uploads & screenshots
+/upload/
+/screenshot_*.png
+
 # Skills directory
 /skills/
+
+# Examples
+/examples/
+
+# Mini services
+/mini-services/
+
+# Scripts (build tools, not part of app)
+/scripts/
+
+# Download
+/download/
+
+# AI-generated intermediate images (keep originals)
+/public/images/ai-generated/
+/public/images/processed/
