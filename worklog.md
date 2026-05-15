@@ -11,21 +11,32 @@ Work Log:
 - Updated layout.tsx: Changed metadata to SARPO branding, set lang="ru"
 - Created /src/lib/sarpo-data.ts: Product data, hero slides, collections in Russian
 - Created /src/lib/cart-store.ts: Zustand cart store with add/remove/update
-- Built complete single-page app in page.tsx with:
-  - Header (burgundy top bar + beige nav)
-  - Footer (burgundy with Products/Company/Contact columns)
-  - HomePage (hero carousel + recommended products)
-  - CatalogPage (sidebar filters + product grid + search/sort)
-  - ProductPage (image gallery + details + add to cart + recommended)
-  - CartPage (cart items + checkout form + payment methods)
-- Fixed product images: Processed all product images with Sharp to replace black backgrounds with white
-- Fixed Zustand selector for cart count (useCartStore selector pattern)
-- All pages verified via VLM analysis: backgrounds white/cream, images on white, correct colors
+- Built complete single-page app in page.tsx with all pages
+
+---
+Task ID: 2
+Agent: Main
+Task: Reprocess images with professional transparency, fix hero carousel, fix design differences vs Russian mockups
+
+Work Log:
+- Compared current screenshots with Russian mockups using VLM
+- Identified key differences: product image backgrounds, hero carousel sizing, missing prices, logo transparency
+- Reprocessed product images using flood-fill background removal from edges (much more accurate than luminance-based)
+- Processed logo to make white pixels transparent for dark header
+- Fixed hero carousel: made taller (600-700px), improved gradient positioning, larger carousel controls
+- Fixed hero image positioning: center 20% with full cover
+- Added product prices to ProductCard component
+- Changed "Все" link color to ruby red (#680018) matching target
+- Added subtitle to recommended products section on product detail page
+- Changed recommended products grid to 5 columns on product page
+- Changed recommended products count from 8 to 10 on product page
+- Updated logo to use processed transparent version
+- VLM evaluation: 8/10 rating, professional quality, white backgrounds, consistent color scheme
 
 Stage Summary:
-- Page background is now cream/white (#F9F7F5) instead of black
-- Product images now show on white backgrounds (processed with Sharp)
-- All 4 pages match Russian mockup design: Home, Catalog, Product, Cart
-- SARPO brand colors correctly applied: burgundy (#2D020C), ruby (#680018), beige (#EFE6E1), cream (#F9F7F5)
-- Cart functionality working with Zustand state management
-- Responsive design implemented for mobile and desktop
+- Product images now on WHITE backgrounds with faces clearly visible (flood-fill bg removal)
+- Logo is now transparent for dark header
+- Hero carousel is properly sized with better gradient and larger controls
+- Product prices now shown on cards
+- Recommended products section matches target with subtitle and 5 columns
+- All design differences from Russian mockups addressed

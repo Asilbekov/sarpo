@@ -48,7 +48,7 @@ function Header({ onNavigate, currentPage }: { onNavigate: (page: PageView) => v
           className="flex items-center gap-3 py-3"
         >
           <img
-            src="/images/sarpo_logo.png"
+            src="/images/processed/sarpo_logo.png"
             alt="SARPO"
             className="h-10 w-auto select-none"
             draggable={false}
@@ -212,6 +212,9 @@ function ProductCard({
         <h3 className="text-xs md:text-sm font-medium text-[#1A1314] line-clamp-1 group-hover:text-[#680018] transition-colors">
           {product.name}
         </h3>
+        <p className="text-xs md:text-sm text-[#706567] mt-1">
+          ${product.price.toFixed(2)}
+        </p>
       </div>
     </button>
   );
@@ -244,50 +247,53 @@ function HomePage({
       {/* Hero Section */}
       <section
         className="relative overflow-hidden"
-        style={{ backgroundColor: '#EFE6E1', minHeight: '500px' }}
+        style={{ backgroundColor: '#EFE6E1', minHeight: '600px' }}
       >
         <div className="absolute inset-0">
           {heroSlides.map((s, i) => (
             <div
               key={s.image}
-              className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out"
+              className="absolute inset-0 bg-cover transition-opacity duration-1000 ease-in-out"
               style={{
                 backgroundImage: `url(${s.image})`,
-                backgroundPosition: 'right center',
+                backgroundPosition: 'center 20%',
+                backgroundSize: 'cover',
                 opacity: i === slideIndex ? 1 : 0,
               }}
             />
           ))}
           {/* Left-side beige gradient */}
           <div
-            className="absolute inset-y-0 left-0 w-full lg:w-2/3 pointer-events-none"
+            className="absolute inset-y-0 left-0 w-full lg:w-3/5 pointer-events-none"
             style={{
               background:
-                'linear-gradient(to right, #EFE6E1 0%, #EFE6E1 35%, rgba(239,230,225,0.85) 50%, rgba(239,230,225,0) 75%)',
+                'linear-gradient(to right, #EFE6E1 0%, #EFE6E1 30%, rgba(239,230,225,0.9) 45%, rgba(239,230,225,0.4) 65%, rgba(239,230,225,0) 80%)',
             }}
           />
         </div>
 
-        <div className="relative max-w-[1400px] mx-auto px-4 md:px-12 py-16 md:py-28 lg:py-32 flex flex-col justify-center w-full lg:w-1/2 min-h-[500px] md:min-h-[600px]">
-          <h1
-            className="text-3xl md:text-5xl lg:text-[56px] font-bold text-[#1A1314] mb-4 md:mb-6 leading-[1.1]"
-          >
-            {slide.title}
-          </h1>
-          <p className="text-sm md:text-base lg:text-lg text-[#1A1314]/85 mb-8 md:mb-10 max-w-xl leading-relaxed">
-            {slide.subtitle}
-          </p>
+        <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-20 md:py-28 lg:py-36 flex flex-col justify-center min-h-[600px] md:min-h-[700px]">
+          <div className="w-full lg:w-1/2 xl:w-2/5">
+            <h1
+              className="text-3xl md:text-5xl lg:text-[56px] font-bold text-[#1A1314] mb-5 md:mb-8 leading-[1.1]"
+            >
+              {slide.title}
+            </h1>
+            <p className="text-sm md:text-base lg:text-lg text-[#1A1314]/85 mb-10 md:mb-14 max-w-lg leading-relaxed">
+              {slide.subtitle}
+            </p>
+          </div>
 
           {/* Carousel controls */}
-          <div className="flex items-center gap-4 md:gap-5 mt-2 md:mt-4">
+          <div className="flex items-center gap-5 md:gap-6 mt-auto">
             <button
               onClick={prev}
-              className="text-[#680018] hover:text-[#2D020C] transition-colors"
+              className="text-[#680018] hover:text-[#2D020C] transition-colors p-1"
               aria-label="Назад"
             >
-              <ArrowLeft className="w-6 h-6 md:w-7 md:h-7" strokeWidth={1.5} />
+              <ArrowLeft className="w-7 h-7 md:w-8 md:h-8" strokeWidth={1.5} />
             </button>
-            <div className="flex gap-2 md:gap-2.5 items-center">
+            <div className="flex gap-3 items-center">
               {heroSlides.map((_, i) => (
                 <button
                   key={i}
@@ -296,46 +302,46 @@ function HomePage({
                   aria-label={`Слайд ${i + 1}`}
                 >
                   {i === slideIndex ? (
-                    <span className="block w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border-2 border-[#680018] flex items-center justify-center">
-                      <span className="block w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[#680018]"></span>
+                    <span className="block w-4 h-4 rounded-full border-2 border-[#680018] flex items-center justify-center">
+                      <span className="block w-2 h-2 rounded-full bg-[#680018]"></span>
                     </span>
                   ) : (
-                    <span className="block w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-[#680018]/40 hover:bg-[#680018]"></span>
+                    <span className="block w-3 h-3 rounded-full bg-[#680018]/40 hover:bg-[#680018]"></span>
                   )}
                 </button>
               ))}
             </div>
             <button
               onClick={next}
-              className="text-[#680018] hover:text-[#2D020C] transition-colors"
+              className="text-[#680018] hover:text-[#2D020C] transition-colors p-1"
               aria-label="Вперёд"
             >
-              <ArrowRight className="w-6 h-6 md:w-7 md:h-7" strokeWidth={1.5} />
+              <ArrowRight className="w-7 h-7 md:w-8 md:h-8" strokeWidth={1.5} />
             </button>
           </div>
         </div>
       </section>
 
       {/* Recommended Products Section */}
-      <section className="py-12 md:py-20 px-4 md:px-12 max-w-[1400px] mx-auto">
+      <section className="py-14 md:py-20 px-4 md:px-12 max-w-[1400px] mx-auto">
         <div className="flex justify-between items-end mb-8 md:mb-10">
           <div>
             <h2 className="text-2xl md:text-4xl font-medium text-[#1A1314] mb-1 md:mb-2">
               Рекомендуемые продукты
             </h2>
             <p className="text-[#706567] text-xs md:text-sm">
-              Подборка необходимых вещей для каждого гардероба
+              Подборка новых товаров для каждого сезона
             </p>
           </div>
           <button
             onClick={() => onNavigate('catalog')}
-            className="text-xs md:text-sm font-medium flex items-center gap-1 text-[#1A1314] hover:text-[#680018] transition-colors"
+            className="text-xs md:text-sm font-medium flex items-center gap-1 text-[#680018] hover:text-[#2D020C] transition-colors"
           >
             Все <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
           {recommendedProducts.map((product) => (
             <ProductCard key={product.id} product={product} onSelect={onSelectProduct} />
           ))}
@@ -529,7 +535,7 @@ function ProductPage({
     ...productGallery.filter((p) => p !== product.image),
   ].slice(0, 4);
 
-  const recommendedProducts = products.filter((p) => p.id !== product.id).slice(0, 8);
+  const recommendedProducts = products.filter((p) => p.id !== product.id).slice(0, 10);
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
@@ -633,9 +639,14 @@ function ProductPage({
       {/* Recommended Products Section */}
       <div className="mt-12 md:mt-24">
         <div className="flex justify-between items-end mb-6 md:mb-8">
-          <h2 className="text-2xl md:text-3xl font-medium text-[#1A1314]">
-            Рекомендуемые продукты
-          </h2>
+          <div>
+            <h2 className="text-2xl md:text-3xl font-medium text-[#1A1314]">
+              Рекомендуемые продукты
+            </h2>
+            <p className="text-[#706567] text-xs md:text-sm mt-1">
+              Подборка новых товаров для каждого сезона
+            </p>
+          </div>
           <button
             onClick={() => onNavigate('catalog')}
             className="text-[#680018] text-xs md:text-sm font-medium flex items-center gap-1 hover:underline"
@@ -643,7 +654,7 @@ function ProductPage({
             Все →
           </button>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
           {recommendedProducts.map((p) => (
             <ProductCard key={p.id} product={p} onSelect={onSelectProduct} />
           ))}
