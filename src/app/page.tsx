@@ -72,10 +72,10 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
       className="w-full flex flex-col sticky top-0 z-50 transition-transform duration-300 ease-in-out"
       style={{ transform: visible ? 'translateY(0)' : 'translateY(-100%)' }}
     >
-      {/* Top bar — deep wine background */}
+      {/* Top bar — ruby background */}
       <div
         className="text-white px-4 md:px-12 flex items-center justify-between"
-        style={{ backgroundColor: '#2D020C', minHeight: '72px' }}
+        style={{ backgroundColor: '#680018', minHeight: '72px' }}
       >
         <button
           onClick={() => onNavigate('home')}
@@ -97,7 +97,7 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
 
         <div className="flex items-center gap-4">
           <form onSubmit={handleHeaderSearch} className="relative hidden md:block">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#680018]" />
             <input
               type="text"
               placeholder="Search"
@@ -109,7 +109,7 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
           <button
             onClick={() => onNavigate('cart')}
             className="bg-white p-2.5 rounded-full relative hover:scale-105 transition-transform"
-            style={{ color: '#2D020C' }}
+            style={{ color: '#680018' }}
             aria-label="Корзина"
           >
             <ShoppingBag className="w-5 h-5" />
@@ -402,6 +402,10 @@ function CatalogPage({
   const [selectedCollections, setSelectedCollections] = useState<string[]>(initialCollection ? [initialCollection] : []);
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
+  const PRICE_MIN = 0;
+  const PRICE_MAX = 100;
+  const [priceMin, setPriceMin] = useState(PRICE_MIN);
+  const [priceMax, setPriceMax] = useState(PRICE_MAX);
 
   const toggleCollection = (col: string) => {
     setSelectedCollections((prev) =>
@@ -414,6 +418,7 @@ function CatalogPage({
       if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       if (selectedCollections.length > 0 && !selectedCollections.includes(p.collection)) return false;
       if (selectedCollections.includes('Новинки') && !p.isNew) return false;
+      if (p.price < priceMin || p.price > priceMax) return false;
       return true;
     })
     .sort((a, b) => {
@@ -470,23 +475,48 @@ function CatalogPage({
           {/* Price Filter */}
           <div>
             <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4 text-[#1A1314]">Цена</h3>
-            <div className="w-full relative h-1 bg-gray-200 rounded mb-3 md:mb-4">
+            <div className="w-full relative h-1.5 bg-gray-200 rounded mb-3 md:mb-4">
+              {/* Active track between the two thumbs */}
               <div
-                className="absolute left-0 right-0 h-1 rounded"
-                style={{ backgroundColor: '#680018' }}
-              ></div>
-              <div
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border-2 border-white shadow-md"
-                style={{ backgroundColor: '#680018' }}
-              ></div>
-              <div
-                className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border-2 border-white shadow-md"
-                style={{ backgroundColor: '#680018' }}
-              ></div>
+                className="absolute h-1.5 rounded"
+                style={{
+                  backgroundColor: '#680018',
+                  left: `${((priceMin - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
+                  right: `${100 - ((priceMax - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
+                }}
+              />
+              {/* Min thumb */}
+              <input
+                type="range"
+                min={PRICE_MIN}
+                max={PRICE_MAX}
+                step={1}
+                value={priceMin}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setPriceMin(Math.min(val, priceMax - 1));
+                }}
+                className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#680018] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#680018] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+                style={{ top: '50%', transform: 'translateY(-50%)' }}
+              />
+              {/* Max thumb */}
+              <input
+                type="range"
+                min={PRICE_MIN}
+                max={PRICE_MAX}
+                step={1}
+                value={priceMax}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setPriceMax(Math.max(val, priceMin + 1));
+                }}
+                className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#680018] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#680018] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+                style={{ top: '50%', transform: 'translateY(-50%)' }}
+              />
             </div>
             <div className="flex justify-between text-[10px] md:text-xs text-[#706567]">
-              <span>0 $</span>
-              <span>100 000 $</span>
+              <span>{priceMin} $</span>
+              <span>{priceMax} $</span>
             </div>
           </div>
         </aside>

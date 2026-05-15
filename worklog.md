@@ -73,3 +73,38 @@ Stage Summary:
 - Logo: ornate medallion design, transparent background, visible on dark header
 - Hero images: professional fashion photography style
 - No more black backgrounds on any image
+
+---
+Task ID: 1
+Agent: main
+Task: Change top sticky header background to #680018 and update search/cart icons to match
+
+Work Log:
+- Changed header top bar background from #2D020C to #680018
+- Changed search magnifying glass icon from text-gray-400 to text-[#680018]
+- Changed cart button icon color from #2D020C to #680018
+- The white text/logo remains visible on the lighter ruby background
+- The search input and cart button still have white backgrounds so the #680018 icons are visible
+
+Stage Summary:
+- Header top bar is now #680018 (ruby) instead of #2D020C (deep wine)
+- Search and cart icons are now ruby-themed to match the header
+
+---
+Task ID: 2
+Agent: main
+Task: Fix price range slider in catalog
+
+Work Log:
+- Previous price slider was purely visual (static divs) with no interactivity
+- Added priceMin/priceMax state (PRICE_MIN=0, PRICE_MAX=100)
+- Replaced static divs with two overlapping HTML range inputs (dual-thumb slider)
+- Added active track between thumbs with dynamic left/right percentages
+- Added price filter to the filteredProducts chain
+- Min/max labels now show current slider values dynamically
+- Thumbs are styled with Tailwind arbitrary variants for webkit and moz
+
+Stage Summary:
+- Price range slider is now fully interactive with drag handles
+- Products are filtered by the selected price range
+- Price labels update in real-time as sliders are moved
