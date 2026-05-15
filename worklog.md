@@ -125,3 +125,32 @@ Stage Summary:
 - Proper vector SVG logo saved to public/images/sarpo_logo.svg
 - Removed redundant SARPO text from header (logo SVG has its own text)
 - All three pending tasks completed: header color, price slider, SVG logo
+
+---
+Task ID: 4
+Agent: main
+Task: Configure PostgreSQL (Neon) database, set up git, push to GitHub
+
+Work Log:
+- Updated Prisma schema from SQLite to PostgreSQL provider
+- Created Product, Order, OrderItem models replacing the default User/Post models
+- Updated .env with Neon PostgreSQL connection string (removed channel_binding param for compatibility)
+- Installed @prisma/adapter-pg and pg packages
+- Ran prisma db push --accept-data-loss to sync schema with Neon
+- Ran prisma generate to regenerate client
+- Created prisma/seed.ts with all 12 products from sarpo-data.ts
+- Seeded database successfully with 12 products
+- Added git remote origin: https://github.com/FreedoomForm/sarpo.git
+- Pushed all code to GitHub main branch
+- Removed .env from git tracking (contained secrets)
+- Removed db/custom.db from git tracking (now using PostgreSQL)
+- Purged .env from entire git history using git-filter-repo
+- Force-pushed cleaned history to GitHub
+- Created .env.example for developer reference
+- Updated .gitignore with proper exclusions (db files, uploads, screenshots, scripts, etc.)
+
+Stage Summary:
+- Database: Neon PostgreSQL configured and synced, 12 products seeded
+- Git: Code pushed to https://github.com/FreedoomForm/sarpo (main branch)
+- Security: .env purged from git history, .env.example created for reference
+- All 621 files tracked in git, dev server running on port 3000
