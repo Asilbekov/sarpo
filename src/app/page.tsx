@@ -26,16 +26,16 @@ import { toast } from 'sonner';
 type PageView = 'home' | 'catalog' | 'product' | 'cart';
 
 /* ──────────────── Header ──────────────── */
-function Header({ onNavigate, currentPage, onSearch }: { onNavigate: (page: PageView) => void; currentPage: PageView; onSearch: (query: string) => void }) {
+function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { onNavigate: (page: PageView) => void; currentPage: PageView; onSearch: (query: string) => void; onCollectionNavigate: (collection: string) => void }) {
   const cartCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.quantity, 0));
   const [headerSearch, setHeaderSearch] = useState('');
   const [visible, setVisible] = useState(true);
   const navLinks = [
-    { title: 'Весенняя коллекция', collection: 'spring' },
-    { title: 'Летняя коллекция', collection: 'summer' },
-    { title: 'Осенняя коллекция', collection: 'autumn' },
-    { title: 'Зимняя коллекция', collection: 'winter' },
-    { title: 'Новинки', collection: 'new' },
+    { title: 'Весенняя коллекция', collection: 'Весенняя коллекция' },
+    { title: 'Летняя коллекция', collection: 'Летняя коллекция' },
+    { title: 'Осенняя коллекция', collection: 'Осенняя коллекция' },
+    { title: 'Зимняя коллекция', collection: 'Зимняя коллекция' },
+    { title: 'Новинки', collection: 'Новинки' },
   ];
 
   const handleHeaderSearch = (e: React.FormEvent) => {
@@ -129,7 +129,7 @@ function Header({ onNavigate, currentPage, onSearch }: { onNavigate: (page: Page
             {navLinks.map((link) => (
               <li key={link.collection}>
                 <button
-                  onClick={() => onNavigate('catalog')}
+                  onClick={() => onCollectionNavigate(link.collection)}
                   className="transition-colors hover:text-[#680018] whitespace-nowrap px-1"
                 >
                   {link.title}
@@ -392,12 +392,14 @@ function HomePage({
 function CatalogPage({
   onSelectProduct,
   initialSearch = '',
+  initialCollection = '',
 }: {
   onSelectProduct: (product: Product) => void;
   initialSearch?: string;
+  initialCollection?: string;
 }) {
   const [searchQuery, setSearchQuery] = useState(initialSearch);
-  const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
+  const [selectedCollections, setSelectedCollections] = useState<string[]>(initialCollection ? [initialCollection] : []);
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
 
@@ -946,6 +948,7 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState<PageView>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [catalogSearch, setCatalogSearch] = useState('');
+  const [catalogCollection, setCatalogCollection] = useState('');
 
   const navigate = useCallback((page: PageView) => {
     setCurrentPage(page);
@@ -960,13 +963,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F9F7F5' }}>
-      <Header onNavigate={navigate} currentPage={currentPage} onSearch={(query) => { setCatalogSearch(query); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+      <Header onNavigate={navigate} currentPage={currentPage} onSearch={(query) => { setCatalogSearch(query); setCatalogCollection(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
       <main className="flex-1">
         {currentPage === 'home' && (
           <HomePage onNavigate={navigate} onSelectProduct={selectProduct} />
         )}
         {currentPage === 'catalog' && (
-          <CatalogPage onSelectProduct={selectProduct} initialSearch={catalogSearch} />
+          <CatalogPage onSelectProduct={selectProduct} initialSearch={catalogSearch} initialCollection={catalogCollection} />
         )}
         {currentPage === 'product' && selectedProduct && (
           <ProductPage product={selectedProduct} onNavigate={navigate} onSelectProduct={selectProduct} />
