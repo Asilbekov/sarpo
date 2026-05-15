@@ -144,7 +144,7 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
 }
 
 /* ──────────────── Footer ──────────────── */
-function Footer({ onNavigate }: { onNavigate: (page: PageView) => void }) {
+function Footer({ onCollectionNavigate }: { onCollectionNavigate: (collection: string) => void }) {
   return (
     <footer
       className="text-white pt-12 md:pt-16 pb-8 px-4 md:px-12 mt-auto"
@@ -154,10 +154,10 @@ function Footer({ onNavigate }: { onNavigate: (page: PageView) => void }) {
         <div>
           <h3 className="font-medium text-lg mb-6 tracking-wide">Продукты</h3>
           <ul className="space-y-4 text-sm text-white/75">
-            <li><button onClick={() => onNavigate('catalog')} className="hover:text-white transition-colors">Весенняя коллекция</button></li>
-            <li><button onClick={() => onNavigate('catalog')} className="hover:text-white transition-colors">Летняя коллекция</button></li>
-            <li><button onClick={() => onNavigate('catalog')} className="hover:text-white transition-colors">Осенняя коллекция</button></li>
-            <li><button onClick={() => onNavigate('catalog')} className="hover:text-white transition-colors">Зимняя коллекция</button></li>
+            <li><button onClick={() => onCollectionNavigate('Весенняя коллекция')} className="hover:text-white transition-colors">Весенняя коллекция</button></li>
+            <li><button onClick={() => onCollectionNavigate('Летняя коллекция')} className="hover:text-white transition-colors">Летняя коллекция</button></li>
+            <li><button onClick={() => onCollectionNavigate('Осенняя коллекция')} className="hover:text-white transition-colors">Осенняя коллекция</button></li>
+            <li><button onClick={() => onCollectionNavigate('Зимняя коллекция')} className="hover:text-white transition-colors">Зимняя коллекция</button></li>
           </ul>
         </div>
         <div>
@@ -978,7 +978,7 @@ export default function Home() {
           <CartPage onNavigate={navigate} />
         )}
       </main>
-      <Footer onNavigate={navigate} />
+      <Footer onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
     </div>
   );
 }
