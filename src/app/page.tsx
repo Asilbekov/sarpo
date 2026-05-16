@@ -95,10 +95,10 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
             {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
 
-          {/* Logo — centered on mobile, left-aligned on desktop */}
+          {/* Logo — left-aligned on all screens */}
           <button
             onClick={() => onNavigate('home')}
-            className="flex items-center py-2 md:py-3 absolute left-1/2 -translate-x-1/2 md:relative md:left-auto md:translate-x-0"
+            className="flex items-center py-2 md:py-3"
           >
             <img
               src="/images/sarpo_logo.svg"
