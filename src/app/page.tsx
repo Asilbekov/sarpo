@@ -70,15 +70,10 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Lock body scroll when drawer is open
-  useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [menuOpen]);
+  const handleNavigate = (page: PageView) => {
+    setMenuOpen(false);
+    onNavigate(page);
+  };
 
   return (
     <>
@@ -91,13 +86,13 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
           className="text-white px-4 md:px-12 flex items-center justify-between relative"
           style={{ backgroundColor: '#680018', minHeight: '56px' }}
         >
-          {/* Mobile: Hamburger menu */}
+          {/* Mobile: Hamburger menu / Close */}
           <button
-            onClick={() => setMenuOpen(true)}
+            onClick={() => setMenuOpen(!menuOpen)}
             className="md:hidden p-2 -ml-2 text-white"
             aria-label="Меню"
           >
-            <Menu className="w-6 h-6" />
+            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
 
           {/* Logo — centered on mobile, left-aligned on desktop */}
@@ -152,6 +147,50 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
           </div>
         </div>
 
+        {/* Mobile Dropdown Menu — opens from top to bottom */}
+        <div
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            menuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          }`}
+          style={{ backgroundColor: '#2D020C' }}
+        >
+          {/* Products section */}
+          <div className="px-5 pt-4 pb-3">
+            <ul className="space-y-3 text-sm text-white/80">
+              <li><button onClick={() => { onCollectionNavigate('Весенняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Весенняя коллекция</button></li>
+              <li><button onClick={() => { onCollectionNavigate('Летняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Летняя коллекция</button></li>
+              <li><button onClick={() => { onCollectionNavigate('Осенняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Осенняя коллекция</button></li>
+              <li><button onClick={() => { onCollectionNavigate('Зимняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Зимняя коллекция</button></li>
+              <li><button onClick={() => { onCollectionNavigate('Новинки'); setMenuOpen(false); }} className="hover:text-white transition-colors">Новинки</button></li>
+            </ul>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-white/15 mx-5" />
+
+          {/* Company section */}
+          <div className="px-5 py-3">
+            <ul className="space-y-3 text-sm text-white/80">
+              <li><span className="hover:text-white transition-colors cursor-pointer">О нас</span></li>
+              <li><span className="hover:text-white transition-colors cursor-pointer">Карьера</span></li>
+              <li><span className="hover:text-white transition-colors cursor-pointer">Устойчивое развитие</span></li>
+              <li><span className="hover:text-white transition-colors cursor-pointer">Пресса</span></li>
+            </ul>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-white/15 mx-5" />
+
+          {/* Contact & Social */}
+          <div className="px-5 py-3">
+            <div className="flex gap-4">
+              <a href="#" className="hover:text-white/70 transition-colors text-white/80" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
+              <a href="#" className="hover:text-white/70 transition-colors text-white/80" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
+              <a href="#" className="hover:text-white/70 transition-colors text-white/80" aria-label="Twitter"><Twitter className="w-5 h-5" /></a>
+            </div>
+          </div>
+        </div>
+
         {/* Nav bar — warm beige background — hidden on mobile */}
         <div style={{ backgroundColor: '#EFE6E1' }} className="border-b border-black/5 hidden md:block">
           <nav className="max-w-[1400px] mx-auto px-4 md:px-12">
@@ -170,106 +209,6 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
           </nav>
         </div>
       </header>
-
-      {/* Mobile Bottom Sheet Menu */}
-      <div
-        className={`fixed inset-0 z-[60] md:hidden transition-opacity duration-300 ${
-          menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-      >
-        {/* Semi-transparent overlay */}
-        <div
-          className="absolute inset-0 bg-black/50"
-          onClick={() => setMenuOpen(false)}
-        />
-        {/* Bottom Sheet panel */}
-        <div
-          className={`absolute bottom-0 left-0 right-0 w-full rounded-t-2xl transition-transform duration-300 ease-out max-h-[85vh] overflow-y-auto ${
-            menuOpen ? 'translate-y-0' : 'translate-y-full'
-          }`}
-          style={{ backgroundColor: '#2D020C' }}
-        >
-          {/* Handle bar */}
-          <div className="flex justify-center pt-3 pb-2">
-            <div className="w-10 h-1 rounded-full bg-white/30" />
-          </div>
-
-          {/* Products section */}
-          <div className="px-5 pb-5">
-            <h3 className="font-medium text-lg mb-4 text-white tracking-wide">Продукты</h3>
-            <ul className="space-y-3 text-sm text-white/75">
-              <li><button onClick={() => { onCollectionNavigate('Весенняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Весенняя коллекция</button></li>
-              <li><button onClick={() => { onCollectionNavigate('Летняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Летняя коллекция</button></li>
-              <li><button onClick={() => { onCollectionNavigate('Осенняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Осенняя коллекция</button></li>
-              <li><button onClick={() => { onCollectionNavigate('Зимняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Зимняя коллекция</button></li>
-            </ul>
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-white/15 mx-5" />
-
-          {/* Company section */}
-          <div className="px-5 py-5">
-            <h3 className="font-medium text-lg mb-4 text-white tracking-wide">Компания</h3>
-            <ul className="space-y-3 text-sm text-white/75">
-              <li><span className="hover:text-white transition-colors cursor-pointer">О нас</span></li>
-              <li><span className="hover:text-white transition-colors cursor-pointer">Карьера</span></li>
-              <li><span className="hover:text-white transition-colors cursor-pointer">Устойчивое развитие</span></li>
-              <li><span className="hover:text-white transition-colors cursor-pointer">Пресса</span></li>
-            </ul>
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-white/15 mx-5" />
-
-          {/* Contact section */}
-          <div className="px-5 py-5">
-            <h3 className="font-medium text-lg mb-4 text-white tracking-wide">Связаться</h3>
-            <div className="flex gap-4 mb-5">
-              <a href="#" className="hover:text-white/70 transition-colors text-white/75" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
-              <a href="#" className="hover:text-white/70 transition-colors text-white/75" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
-              <a href="#" className="hover:text-white/70 transition-colors text-white/75" aria-label="Twitter"><Twitter className="w-5 h-5" /></a>
-            </div>
-            <p className="text-sm text-white/75 mb-3">Подпишитесь на нашу рассылку</p>
-            <form className="flex w-full gap-0" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="Email address"
-                className="bg-black/30 border border-white/15 text-white placeholder-white/40 px-4 py-2.5 text-sm outline-none flex-grow focus:border-white/40 rounded-l-sm"
-              />
-              <button
-                type="submit"
-                className="bg-white/10 hover:bg-white/20 border border-white/15 border-l-0 transition-colors px-5 py-2.5 text-sm font-medium rounded-r-sm"
-              >
-                Join
-              </button>
-            </form>
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-white/15 mx-5" />
-
-          {/* Footer links */}
-          <div className="px-5 py-4 flex flex-col items-center text-xs text-white/50 gap-3">
-            <p>&copy; 2026 SARPO. All rights reserved.</p>
-            <div className="flex gap-4 flex-wrap justify-center">
-              <span className="hover:text-white transition-colors cursor-pointer">Политика конфиденциальности</span>
-              <span className="hover:text-white transition-colors cursor-pointer">Условия использования</span>
-              <span className="hover:text-white transition-colors cursor-pointer">Публичная оферта</span>
-            </div>
-          </div>
-
-          {/* Close button */}
-          <div className="px-5 pb-6 pt-2">
-            <button
-              onClick={() => setMenuOpen(false)}
-              className="w-full py-3 rounded-sm text-white/80 border border-white/20 text-sm font-medium hover:bg-white/10 transition-colors"
-            >
-              Закрыть
-            </button>
-          </div>
-        </div>
-      </div>
     </>
   );
 }
