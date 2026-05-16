@@ -147,15 +147,16 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu — opens from top to bottom */}
+        {/* Mobile Menu — full overlay below header, opens from top to bottom */}
         <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            menuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          className={`md:hidden overflow-y-auto transition-all duration-300 ease-in-out ${
+            menuOpen ? 'max-h-[calc(100vh-56px)] opacity-100' : 'max-h-0 opacity-0'
           }`}
-          style={{ backgroundColor: '#2D020C' }}
+          style={{ backgroundColor: '#680018' }}
         >
-          {/* Products section */}
-          <div className="px-5 pt-4 pb-3">
+          {/* Продукты section */}
+          <div className="px-5 pt-5 pb-4">
+            <h3 className="text-white text-sm font-medium mb-4 tracking-wide">Продукты</h3>
             <ul className="space-y-3 text-sm text-white/80">
               <li><button onClick={() => { onCollectionNavigate('Весенняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Весенняя коллекция</button></li>
               <li><button onClick={() => { onCollectionNavigate('Летняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Летняя коллекция</button></li>
@@ -168,8 +169,9 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
           {/* Divider */}
           <div className="border-t border-white/15 mx-5" />
 
-          {/* Company section */}
-          <div className="px-5 py-3">
+          {/* Компания section */}
+          <div className="px-5 py-4">
+            <h3 className="text-white text-sm font-medium mb-4 tracking-wide">Компания</h3>
             <ul className="space-y-3 text-sm text-white/80">
               <li><span className="hover:text-white transition-colors cursor-pointer">О нас</span></li>
               <li><span className="hover:text-white transition-colors cursor-pointer">Карьера</span></li>
@@ -181,13 +183,28 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
           {/* Divider */}
           <div className="border-t border-white/15 mx-5" />
 
-          {/* Contact & Social */}
-          <div className="px-5 py-3">
-            <div className="flex gap-4">
+          {/* Связаться section */}
+          <div className="px-5 py-4 pb-6">
+            <h3 className="text-white text-sm font-medium mb-4 tracking-wide">Связаться</h3>
+            <div className="flex gap-4 mb-5">
               <a href="#" className="hover:text-white/70 transition-colors text-white/80" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
               <a href="#" className="hover:text-white/70 transition-colors text-white/80" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
               <a href="#" className="hover:text-white/70 transition-colors text-white/80" aria-label="Twitter"><Twitter className="w-5 h-5" /></a>
             </div>
+            <p className="text-sm text-white/75 mb-3">Подпишитесь на нашу рассылку</p>
+            <form className="flex flex-col gap-2" onSubmit={(e) => e.preventDefault()}>
+              <input
+                type="email"
+                placeholder="Email address"
+                className="bg-black/20 border border-white/15 text-white placeholder-white/40 px-4 py-2.5 text-sm outline-none focus:border-white/40"
+              />
+              <button
+                type="submit"
+                className="bg-white/10 hover:bg-white/20 border border-white/15 transition-colors px-6 py-2.5 text-sm font-medium text-white"
+              >
+                Join
+              </button>
+            </form>
           </div>
         </div>
 
