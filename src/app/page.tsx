@@ -17,6 +17,8 @@ import {
   Facebook,
   Instagram,
   Twitter,
+  Menu,
+  X,
 } from 'lucide-react';
 import { products, heroSlides, collections, productGallery, Product } from '@/lib/sarpo-data';
 import { useCartStore } from '@/lib/cart-store';
@@ -30,6 +32,7 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
   const cartCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.quantity, 0));
   const [headerSearch, setHeaderSearch] = useState('');
   const [visible, setVisible] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
   const navLinks = [
     { title: 'Весенняя коллекция', collection: 'Весенняя коллекция' },
     { title: 'Летняя коллекция', collection: 'Летняя коллекция' },
@@ -67,73 +70,159 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  return (
-    <header
-      className="w-full flex flex-col sticky top-0 z-50 transition-transform duration-300 ease-in-out"
-      style={{ transform: visible ? 'translateY(0)' : 'translateY(-100%)' }}
-    >
-      {/* Top bar — ruby background */}
-      <div
-        className="text-white px-4 md:px-12 flex items-center justify-between"
-        style={{ backgroundColor: '#680018', minHeight: '72px' }}
-      >
-        <button
-          onClick={() => onNavigate('home')}
-          className="flex items-center py-3"
-        >
-          <img
-            src="/images/sarpo_logo.svg"
-            alt="SARPO"
-            className="h-12 md:h-14 w-auto select-none"
-            draggable={false}
-          />
-        </button>
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
 
-        <div className="flex items-center gap-4">
-          <form onSubmit={handleHeaderSearch} className="relative hidden md:block">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#680018]" />
-            <input
-              type="text"
-              placeholder="Search"
-              value={headerSearch}
-              onChange={(e) => setHeaderSearch(e.target.value)}
-              className="bg-white text-gray-800 text-sm rounded-full pl-10 pr-5 py-2.5 w-[280px] lg:w-[320px] outline-none border-0 focus:ring-2 focus:ring-white/30"
-            />
-          </form>
+  return (
+    <>
+      <header
+        className="w-full flex flex-col sticky top-0 z-50 transition-transform duration-300 ease-in-out"
+        style={{ transform: visible ? 'translateY(0)' : 'translateY(-100%)' }}
+      >
+        {/* Top bar — ruby background */}
+        <div
+          className="text-white px-4 md:px-12 flex items-center justify-between relative"
+          style={{ backgroundColor: '#680018', minHeight: '56px' }}
+        >
+          {/* Mobile: Hamburger menu */}
           <button
-            onClick={() => onNavigate('cart')}
-            className="bg-white p-2.5 rounded-full relative hover:scale-105 transition-transform"
-            style={{ color: '#680018' }}
-            aria-label="Корзина"
+            onClick={() => setMenuOpen(true)}
+            className="md:hidden p-2 -ml-2 text-white"
+            aria-label="Меню"
           >
-            <ShoppingBag className="w-5 h-5" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-[#680018] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {cartCount}
-              </span>
-            )}
+            <Menu className="w-6 h-6" />
           </button>
+
+          {/* Logo — centered on mobile, left-aligned on desktop */}
+          <button
+            onClick={() => onNavigate('home')}
+            className="flex items-center py-2 md:py-3 absolute left-1/2 -translate-x-1/2 md:relative md:left-auto md:translate-x-0"
+          >
+            <img
+              src="/images/sarpo_logo.svg"
+              alt="SARPO"
+              className="h-10 md:h-14 w-auto select-none"
+              draggable={false}
+            />
+          </button>
+
+          {/* Right side: search + cart */}
+          <div className="flex items-center gap-2 md:gap-4">
+            {/* Mobile: Search icon button */}
+            <button
+              onClick={() => onNavigate('catalog')}
+              className="md:hidden bg-white p-2 rounded-full"
+              style={{ color: '#680018' }}
+              aria-label="Поиск"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+
+            {/* Desktop: Search form */}
+            <form onSubmit={handleHeaderSearch} className="relative hidden md:block">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#680018]" />
+              <input
+                type="text"
+                placeholder="Search"
+                value={headerSearch}
+                onChange={(e) => setHeaderSearch(e.target.value)}
+                className="bg-white text-gray-800 text-sm rounded-full pl-10 pr-5 py-2.5 w-[280px] lg:w-[320px] outline-none border-0 focus:ring-2 focus:ring-white/30"
+              />
+            </form>
+            <button
+              onClick={() => onNavigate('cart')}
+              className="bg-white p-2 md:p-2.5 rounded-full relative hover:scale-105 transition-transform"
+              style={{ color: '#680018' }}
+              aria-label="Корзина"
+            >
+              <ShoppingBag className="w-4 h-4 md:w-5 md:h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#680018] text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Nav bar — warm beige background — hidden on mobile */}
+        <div style={{ backgroundColor: '#EFE6E1' }} className="border-b border-black/5 hidden md:block">
+          <nav className="max-w-[1400px] mx-auto px-4 md:px-12">
+            <ul className="flex items-center w-full justify-between py-3 md:py-4 text-xs md:text-[15px] text-[#1A1314] overflow-x-auto">
+              {navLinks.map((link) => (
+                <li key={link.collection}>
+                  <button
+                    onClick={() => onCollectionNavigate(link.collection)}
+                    className="transition-colors hover:text-[#680018] whitespace-nowrap px-1"
+                  >
+                    {link.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </header>
+
+      {/* Mobile Navigation Drawer */}
+      <div
+        className={`fixed inset-0 z-[60] md:hidden transition-opacity duration-300 ${
+          menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        {/* Semi-transparent overlay */}
+        <div
+          className="absolute inset-0 bg-black/50"
+          onClick={() => setMenuOpen(false)}
+        />
+        {/* Drawer panel */}
+        <div
+          className={`absolute inset-y-0 left-0 w-[280px] bg-white shadow-xl transition-transform duration-300 ${
+            menuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          {/* Drawer Header */}
+          <div
+            className="flex items-center justify-between px-5 py-4"
+            style={{ backgroundColor: '#680018' }}
+          >
+            <span className="text-white font-medium text-lg">Меню</span>
+            <button
+              onClick={() => setMenuOpen(false)}
+              className="text-white p-1"
+              aria-label="Закрыть"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          {/* Drawer Links */}
+          <nav className="py-2">
+            <ul>
+              {navLinks.map((link) => (
+                <li key={link.collection}>
+                  <button
+                    onClick={() => {
+                      onCollectionNavigate(link.collection);
+                      setMenuOpen(false);
+                    }}
+                    className="w-full px-6 py-3.5 text-sm text-[#1A1314] hover:bg-[#F9F7F5] text-left transition-colors border-b border-gray-100"
+                  >
+                    {link.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </div>
-
-      {/* Nav bar — warm beige background */}
-      <div style={{ backgroundColor: '#EFE6E1' }} className="border-b border-black/5">
-        <nav className="max-w-[1400px] mx-auto px-4 md:px-12">
-          <ul className="flex items-center w-full justify-between py-3 md:py-4 text-xs md:text-[15px] text-[#1A1314] overflow-x-auto">
-            {navLinks.map((link) => (
-              <li key={link.collection}>
-                <button
-                  onClick={() => onCollectionNavigate(link.collection)}
-                  className="transition-colors hover:text-[#680018] whitespace-nowrap px-1"
-                >
-                  {link.title}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-    </header>
+    </>
   );
 }
 
@@ -141,7 +230,7 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
 function Footer({ onCollectionNavigate }: { onCollectionNavigate: (collection: string) => void }) {
   return (
     <footer
-      className="text-white pt-12 md:pt-16 pb-8 px-4 md:px-12 mt-auto"
+      className="text-white pt-8 md:pt-16 pb-6 md:pb-8 px-4 md:px-12 mt-auto"
       style={{ backgroundColor: '#2D020C' }}
     >
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12 border-b border-white/15 pb-10 md:pb-12 mb-8">
@@ -171,15 +260,15 @@ function Footer({ onCollectionNavigate }: { onCollectionNavigate: (collection: s
             <a href="#" className="hover:text-white/70 transition-colors" aria-label="Twitter"><Twitter className="w-5 h-5" /></a>
           </div>
           <p className="text-sm text-white/75 mb-4">Подпишитесь на нашу рассылку</p>
-          <form className="flex w-full" onSubmit={(e) => e.preventDefault()}>
+          <form className="flex flex-col sm:flex-row w-full gap-2 sm:gap-0" onSubmit={(e) => e.preventDefault()}>
             <input
               type="email"
               placeholder="Email address"
-              className="bg-black/30 border border-white/15 text-white placeholder-white/40 px-4 py-2.5 text-sm outline-none flex-grow focus:border-white/40"
+              className="bg-black/30 border border-white/15 text-white placeholder-white/40 px-4 py-2.5 text-sm outline-none flex-grow focus:border-white/40 sm:border-r-0"
             />
             <button
               type="submit"
-              className="bg-white/10 hover:bg-white/20 border border-transparent transition-colors px-6 py-2.5 text-sm font-medium"
+              className="bg-white/10 hover:bg-white/20 border border-white/15 sm:border-l-0 transition-colors px-6 py-2.5 text-sm font-medium"
             >
               Join
             </button>
@@ -223,7 +312,7 @@ function ProductCard({
         />
         {/* Category badge */}
         <div
-          className="absolute bottom-3 left-3 text-white text-[10px] md:text-[11px] px-2 py-0.5 md:px-2.5 md:py-1 tracking-wide"
+          className="absolute bottom-2 left-2 md:bottom-3 md:left-3 text-white text-[9px] md:text-[11px] px-1.5 py-0.5 md:px-2.5 md:py-1 tracking-wide"
           style={{ backgroundColor: '#680018' }}
         >
           {product.category}
@@ -238,11 +327,11 @@ function ProductCard({
           </div>
         )}
       </div>
-      <div className="mt-3">
-        <h3 className="text-xs md:text-sm font-medium text-[#1A1314] line-clamp-1 group-hover:text-[#680018] transition-colors">
+      <div className="mt-2 md:mt-3">
+        <h3 className="text-[11px] md:text-sm font-medium text-[#1A1314] line-clamp-1 group-hover:text-[#680018] transition-colors">
           {product.name}
         </h3>
-        <p className="text-xs md:text-sm text-[#706567] mt-1">
+        <p className="text-[11px] md:text-sm text-[#706567] mt-1">
           ${product.price.toFixed(2)}
         </p>
       </div>
@@ -277,7 +366,7 @@ function HomePage({
       {/* Hero Section */}
       <section
         className="relative overflow-hidden"
-        style={{ backgroundColor: '#EFE6E1', minHeight: '420px' }}
+        style={{ backgroundColor: '#EFE6E1', minHeight: '280px' }}
       >
         <div className="absolute inset-0">
           {heroSlides.map((s, i) => (
@@ -292,7 +381,7 @@ function HomePage({
               }}
             />
           ))}
-          {/* Left-side beige gradient */}
+          {/* Left-side beige gradient — full width on mobile */}
           <div
             className="absolute inset-y-0 left-0 w-full lg:w-3/5 pointer-events-none"
             style={{
@@ -302,14 +391,14 @@ function HomePage({
           />
         </div>
 
-        <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-14 md:py-20 lg:py-24 flex flex-col justify-center min-h-[420px] md:min-h-[500px]">
+        <div className="relative max-w-[1400px] mx-auto px-4 md:px-12 py-8 md:py-20 lg:py-24 flex flex-col justify-center min-h-[280px] md:min-h-[500px]">
           <div className="w-full lg:w-1/2 xl:w-2/5">
             <h1
-              className="text-2xl md:text-4xl lg:text-[44px] font-bold text-[#1A1314] mb-4 md:mb-6 leading-[1.1]"
+              className="text-xl md:text-4xl lg:text-[44px] font-bold text-[#1A1314] mb-3 md:mb-6 leading-[1.1]"
             >
               {slide.title}
             </h1>
-            <p className="text-xs md:text-sm lg:text-base text-[#1A1314]/85 mb-8 md:mb-10 max-w-lg leading-relaxed">
+            <p className="text-[11px] md:text-sm lg:text-base text-[#1A1314]/85 mb-6 md:mb-10 max-w-lg leading-relaxed">
               {slide.subtitle}
             </p>
           </div>
@@ -317,15 +406,15 @@ function HomePage({
         </div>
 
         {/* Carousel controls — at the bottom of hero */}
-        <div className="relative flex items-center justify-center gap-5 md:gap-6 w-full pb-5 md:pb-6">
+        <div className="relative flex items-center justify-center gap-3 md:gap-6 w-full pb-4 md:pb-6">
           <button
             onClick={prev}
             className="text-[#680018] hover:text-[#2D020C] transition-colors p-1"
             aria-label="Назад"
           >
-            <ArrowLeft className="w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
+            <ArrowLeft className="w-6 h-6 md:w-10 md:h-10" strokeWidth={1.5} />
           </button>
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-2 md:gap-4 items-center">
             {heroSlides.map((_, i) => (
               <button
                 key={i}
@@ -334,11 +423,11 @@ function HomePage({
                 aria-label={`Слайд ${i + 1}`}
               >
                 {i === slideIndex ? (
-                  <span className="block w-8 h-8 rounded-full border-2 border-[#680018] flex items-center justify-center">
-                    <span className="block w-4 h-4 rounded-full bg-[#680018]"></span>
+                  <span className="block w-6 h-6 md:w-8 md:h-8 rounded-full border-2 border-[#680018] flex items-center justify-center">
+                    <span className="block w-3 h-3 md:w-4 md:h-4 rounded-full bg-[#680018]"></span>
                   </span>
                 ) : (
-                  <span className="block w-6 h-6 rounded-full bg-[#680018]/40 hover:bg-[#680018]"></span>
+                  <span className="block w-4 h-4 md:w-6 md:h-6 rounded-full bg-[#680018]/40 hover:bg-[#680018]"></span>
                 )}
               </button>
             ))}
@@ -348,31 +437,31 @@ function HomePage({
             className="text-[#680018] hover:text-[#2D020C] transition-colors p-1"
             aria-label="Вперёд"
           >
-            <ArrowRight className="w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
+            <ArrowRight className="w-6 h-6 md:w-10 md:h-10" strokeWidth={1.5} />
           </button>
         </div>
       </section>
 
       {/* Recommended Products Section */}
-      <section className="py-14 md:py-20 px-4 md:px-12 max-w-[1400px] mx-auto">
-        <div className="flex justify-between items-end mb-8 md:mb-10">
+      <section className="py-10 md:py-20 px-4 md:px-12 max-w-[1400px] mx-auto">
+        <div className="flex justify-between items-end mb-6 md:mb-10">
           <div>
-            <h2 className="text-2xl md:text-4xl font-medium text-[#1A1314] mb-1 md:mb-2">
+            <h2 className="text-xl md:text-4xl font-medium text-[#1A1314] mb-1 md:mb-2">
               Рекомендуемые продукты
             </h2>
-            <p className="text-[#706567] text-xs md:text-sm">
+            <p className="text-[#706567] text-[11px] md:text-sm">
               Подборка новых товаров для каждого сезона
             </p>
           </div>
           <button
             onClick={() => onNavigate('catalog')}
-            className="text-xs md:text-sm font-medium flex items-center gap-1 text-[#680018] hover:text-[#2D020C] transition-colors"
+            className="text-[11px] md:text-sm font-medium flex items-center gap-1 text-[#680018] hover:text-[#2D020C] transition-colors"
           >
-            Все <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            Все <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
           {recommendedProducts.map((product) => (
             <ProductCard key={product.id} product={product} onSelect={onSelectProduct} />
           ))}
@@ -396,6 +485,7 @@ function CatalogPage({
   const [selectedCollections, setSelectedCollections] = useState<string[]>(initialCollection ? [initialCollection] : []);
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const PRICE_MIN = 0;
   const PRICE_MAX = 100;
   const [priceMin, setPriceMin] = useState(PRICE_MIN);
@@ -431,6 +521,77 @@ function CatalogPage({
     { value: 'popular', label: 'Популярные' },
   ];
 
+  const filterContent = (
+    <>
+      <div className="mb-6 md:mb-8">
+        <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4 text-[#1A1314]">Коллекции</h3>
+        <ul className="space-y-2.5 md:space-y-3">
+          {collections.map((col) => (
+            <li key={col} className="flex items-center justify-between">
+              <label className="text-xs md:text-sm text-[#1A1314]/80 cursor-pointer">
+                {col}
+              </label>
+              <input
+                type="checkbox"
+                checked={selectedCollections.includes(col)}
+                onChange={() => toggleCollection(col)}
+                className="w-3.5 h-3.5 md:w-4 md:h-4 rounded border-gray-300 cursor-pointer accent-[#680018]"
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Price Filter */}
+      <div>
+        <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4 text-[#1A1314]">Цена</h3>
+        <div className="w-full relative h-1.5 bg-gray-200 rounded mb-3 md:mb-4">
+          {/* Active track between the two thumbs */}
+          <div
+            className="absolute h-1.5 rounded"
+            style={{
+              backgroundColor: '#680018',
+              left: `${((priceMin - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
+              right: `${100 - ((priceMax - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
+            }}
+          />
+          {/* Min thumb */}
+          <input
+            type="range"
+            min={PRICE_MIN}
+            max={PRICE_MAX}
+            step={1}
+            value={priceMin}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setPriceMin(Math.min(val, priceMax - 1));
+            }}
+            className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#680018] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#680018] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+            style={{ top: '50%', transform: 'translateY(-50%)' }}
+          />
+          {/* Max thumb */}
+          <input
+            type="range"
+            min={PRICE_MIN}
+            max={PRICE_MAX}
+            step={1}
+            value={priceMax}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setPriceMax(Math.max(val, priceMin + 1));
+            }}
+            className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#680018] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#680018] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+            style={{ top: '50%', transform: 'translateY(-50%)' }}
+          />
+        </div>
+        <div className="flex justify-between text-[10px] md:text-xs text-[#706567]">
+          <span>{priceMin} $</span>
+          <span>{priceMax} $</span>
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8 md:py-10">
       {/* Header */}
@@ -440,79 +601,22 @@ function CatalogPage({
       </div>
 
       <div className="flex gap-6 md:gap-10 flex-col md:flex-row">
-        {/* Sidebar */}
-        <aside className="w-full md:w-56 lg:w-64 flex-shrink-0">
+        {/* Mobile: Filter toggle button */}
+        <button
+          onClick={() => setFiltersOpen(!filtersOpen)}
+          className="md:hidden flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-md bg-white text-sm text-[#1A1314] font-medium w-full justify-center"
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          {filtersOpen ? 'Скрыть фильтры' : 'Фильтры'}
+        </button>
+
+        {/* Sidebar — hidden on mobile unless filtersOpen, always visible on md+ */}
+        <aside className={`w-full md:w-56 lg:w-64 flex-shrink-0 ${filtersOpen ? '' : 'hidden md:block'}`}>
           <div className="flex items-center justify-between font-medium mb-5 md:mb-6 text-[#1A1314]">
             <span className="text-base md:text-lg">Фильтры</span>
             <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5 text-[#1A1314]" />
           </div>
-
-          <div className="mb-6 md:mb-8">
-            <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4 text-[#1A1314]">Коллекции</h3>
-            <ul className="space-y-2.5 md:space-y-3">
-              {collections.map((col) => (
-                <li key={col} className="flex items-center justify-between">
-                  <label className="text-xs md:text-sm text-[#1A1314]/80 cursor-pointer">
-                    {col}
-                  </label>
-                  <input
-                    type="checkbox"
-                    checked={selectedCollections.includes(col)}
-                    onChange={() => toggleCollection(col)}
-                    className="w-3.5 h-3.5 md:w-4 md:h-4 rounded border-gray-300 cursor-pointer accent-[#680018]"
-                  />
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Price Filter */}
-          <div>
-            <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4 text-[#1A1314]">Цена</h3>
-            <div className="w-full relative h-1.5 bg-gray-200 rounded mb-3 md:mb-4">
-              {/* Active track between the two thumbs */}
-              <div
-                className="absolute h-1.5 rounded"
-                style={{
-                  backgroundColor: '#680018',
-                  left: `${((priceMin - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
-                  right: `${100 - ((priceMax - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
-                }}
-              />
-              {/* Min thumb */}
-              <input
-                type="range"
-                min={PRICE_MIN}
-                max={PRICE_MAX}
-                step={1}
-                value={priceMin}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setPriceMin(Math.min(val, priceMax - 1));
-                }}
-                className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#680018] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#680018] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
-                style={{ top: '50%', transform: 'translateY(-50%)' }}
-              />
-              {/* Max thumb */}
-              <input
-                type="range"
-                min={PRICE_MIN}
-                max={PRICE_MAX}
-                step={1}
-                value={priceMax}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setPriceMax(Math.max(val, priceMin + 1));
-                }}
-                className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#680018] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#680018] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
-                style={{ top: '50%', transform: 'translateY(-50%)' }}
-              />
-            </div>
-            <div className="flex justify-between text-[10px] md:text-xs text-[#706567]">
-              <span>{priceMin} $</span>
-              <span>{priceMax} $</span>
-            </div>
-          </div>
+          {filterContent}
         </aside>
 
         {/* Main Content */}
@@ -612,22 +716,48 @@ function ProductPage({
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8 md:py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-20 mb-16 md:mb-20">
-        {/* Large Image */}
-        <div
-          className="aspect-[3/4] flex items-center justify-center overflow-hidden rounded-sm border border-gray-100"
-          style={{ backgroundColor: '#FFFFFF' }}
-        >
-          <img
-            src={gallery[activeImg]}
-            alt={product.name}
-            className="w-full h-full object-cover object-center"
-          />
+        {/* Image Section — full width on mobile */}
+        <div>
+          {/* Large Image */}
+          <div
+            className="aspect-[3/4] flex items-center justify-center overflow-hidden rounded-sm border border-gray-100"
+            style={{ backgroundColor: '#FFFFFF' }}
+          >
+            <img
+              src={gallery[activeImg]}
+              alt={product.name}
+              className="w-full h-full object-cover object-center"
+            />
+          </div>
+
+          {/* Mobile: Circular thumbnails below main image */}
+          <div className="flex gap-3 mt-3 md:hidden justify-center">
+            {gallery.map((img, i) => (
+              <button
+                key={img + i}
+                onClick={() => setActiveImg(i)}
+                className={
+                  'w-12 h-12 rounded-full overflow-hidden transition-all ' +
+                  (activeImg === i
+                    ? 'ring-2 ring-[#680018]'
+                    : 'ring-1 ring-transparent hover:ring-[#680018]/40')
+                }
+                style={{ backgroundColor: '#FFFFFF' }}
+              >
+                <img
+                  src={img}
+                  alt={`${product.name} ${i + 1}`}
+                  className="w-full h-full object-cover object-center"
+                />
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Product Info */}
         <div>
-          {/* Thumbnails Row */}
-          <div className="grid grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-10">
+          {/* Desktop: Thumbnails Row (above product info) */}
+          <div className="hidden md:grid grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-10">
             {gallery.map((img, i) => (
               <button
                 key={img + i}
@@ -719,7 +849,7 @@ function ProductPage({
             Все →
           </button>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
           {recommendedProducts.map((p) => (
             <ProductCard key={p.id} product={p} onSelect={onSelectProduct} />
           ))}

@@ -154,3 +154,65 @@ Stage Summary:
 - Git: Code pushed to https://github.com/FreedoomForm/sarpo (main branch)
 - Security: .env purged from git history, .env.example created for reference
 - All 621 files tracked in git, dev server running on port 3000
+
+---
+Task ID: 5
+Agent: main
+Task: Redesign SARPO e-commerce mobile layout to match design mockups
+
+Work Log:
+- Added Menu and X icons to lucide-react imports
+- Header mobile redesign:
+  - Added hamburger menu button (≡) on LEFT side (white on maroon #680018 background)
+  - Centered SARPO logo in header using absolute positioning on mobile, relative on desktop
+  - Added search icon button (white circular) on RIGHT side for mobile (navigates to catalog)
+  - Cart icon button also on right side, white circular on maroon
+  - Reduced header height to 56px on mobile (was 72px)
+  - Logo reduced to h-10 on mobile (was h-12)
+  - Hidden navigation bar (beige bar) on mobile with `hidden md:block`
+  - Created full-height slide-out navigation drawer from left:
+    - Semi-transparent black/50 overlay
+    - White drawer panel with maroon header showing "Меню" and X close button
+    - Collection links as list items with hover states
+    - Smooth slide animation with translate-x transition
+    - Body scroll lock when drawer is open
+- Hero section mobile sizing:
+  - Reduced minHeight to 280px on mobile (was 420px)
+  - Title: text-xl on mobile (was text-2xl)
+  - Subtitle: text-[11px] on mobile (was text-xs)
+  - Carousel arrows: w-6 h-6 on mobile (was w-8)
+  - Carousel dots: w-6/w-3 active, w-4 inactive on mobile (was w-8/w-4 and w-6)
+  - Reduced padding and gaps on mobile
+- Product card mobile sizing:
+  - Category badge: text-[9px] on mobile (was text-[10px])
+  - Product name: text-[11px] on mobile (was text-xs)
+  - Price: text-[11px] on mobile (was text-xs)
+  - Reduced top margin to mt-2 on mobile (was mt-3)
+  - Badge position adjusted: bottom-2 left-2 on mobile
+- Catalog page mobile redesign:
+  - Added filtersOpen state (collapsed by default on mobile)
+  - Added "Фильтры" toggle button with SlidersHorizontal icon (visible on mobile only)
+  - Sidebar hidden on mobile unless filtersOpen (hidden md:block when collapsed)
+  - When expanded, filters show full-width above products grid
+  - Products grid: 2 columns on mobile with gap-3
+- Product detail page mobile redesign:
+  - Restructured layout: main image + circular thumbnails in one column on mobile
+  - Circular thumbnails: w-12 h-12 rounded-full below main image on mobile
+  - Desktop thumbnails remain as aspect-[3/4] grid above product info
+  - Separate rendering for mobile (flex row of circles) and desktop (grid of square cards)
+  - "Добавить в корзину" button already full-width
+- Footer mobile sizing:
+  - Reduced padding: pt-8 pb-6 on mobile (was pt-12 pb-8)
+  - Newsletter form: stacks vertically on mobile (flex-col sm:flex-row) with gap
+  - Input and Join button have proper border handling when stacked
+- All desktop functionality preserved (md: and lg: breakpoints unchanged)
+- ESLint passed with no errors
+- Dev server compiles and runs successfully
+
+Stage Summary:
+- Mobile header completely redesigned: hamburger, centered logo, icon buttons, hidden nav bar, slide-out drawer
+- Hero section properly sized for mobile with smaller text and controls
+- Product cards use smaller text on mobile for better 2-column fit
+- Catalog filters collapsible on mobile with toggle button
+- Product detail page has circular thumbnails on mobile, square on desktop
+- Footer has reduced padding and stacked newsletter form on mobile
