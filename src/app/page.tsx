@@ -171,7 +171,7 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
         </div>
       </header>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Mobile Bottom Sheet Menu */}
       <div
         className={`fixed inset-0 z-[60] md:hidden transition-opacity duration-300 ${
           menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -182,44 +182,92 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
           className="absolute inset-0 bg-black/50"
           onClick={() => setMenuOpen(false)}
         />
-        {/* Drawer panel */}
+        {/* Bottom Sheet panel */}
         <div
-          className={`absolute inset-y-0 left-0 w-[280px] bg-white shadow-xl transition-transform duration-300 ${
-            menuOpen ? 'translate-x-0' : '-translate-x-full'
+          className={`absolute bottom-0 left-0 right-0 w-full rounded-t-2xl transition-transform duration-300 ease-out max-h-[85vh] overflow-y-auto ${
+            menuOpen ? 'translate-y-0' : 'translate-y-full'
           }`}
+          style={{ backgroundColor: '#2D020C' }}
         >
-          {/* Drawer Header */}
-          <div
-            className="flex items-center justify-between px-5 py-4"
-            style={{ backgroundColor: '#680018' }}
-          >
-            <span className="text-white font-medium text-lg">Меню</span>
+          {/* Handle bar */}
+          <div className="flex justify-center pt-3 pb-2">
+            <div className="w-10 h-1 rounded-full bg-white/30" />
+          </div>
+
+          {/* Products section */}
+          <div className="px-5 pb-5">
+            <h3 className="font-medium text-lg mb-4 text-white tracking-wide">Продукты</h3>
+            <ul className="space-y-3 text-sm text-white/75">
+              <li><button onClick={() => { onCollectionNavigate('Весенняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Весенняя коллекция</button></li>
+              <li><button onClick={() => { onCollectionNavigate('Летняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Летняя коллекция</button></li>
+              <li><button onClick={() => { onCollectionNavigate('Осенняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Осенняя коллекция</button></li>
+              <li><button onClick={() => { onCollectionNavigate('Зимняя коллекция'); setMenuOpen(false); }} className="hover:text-white transition-colors">Зимняя коллекция</button></li>
+            </ul>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-white/15 mx-5" />
+
+          {/* Company section */}
+          <div className="px-5 py-5">
+            <h3 className="font-medium text-lg mb-4 text-white tracking-wide">Компания</h3>
+            <ul className="space-y-3 text-sm text-white/75">
+              <li><span className="hover:text-white transition-colors cursor-pointer">О нас</span></li>
+              <li><span className="hover:text-white transition-colors cursor-pointer">Карьера</span></li>
+              <li><span className="hover:text-white transition-colors cursor-pointer">Устойчивое развитие</span></li>
+              <li><span className="hover:text-white transition-colors cursor-pointer">Пресса</span></li>
+            </ul>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-white/15 mx-5" />
+
+          {/* Contact section */}
+          <div className="px-5 py-5">
+            <h3 className="font-medium text-lg mb-4 text-white tracking-wide">Связаться</h3>
+            <div className="flex gap-4 mb-5">
+              <a href="#" className="hover:text-white/70 transition-colors text-white/75" aria-label="Facebook"><Facebook className="w-5 h-5" /></a>
+              <a href="#" className="hover:text-white/70 transition-colors text-white/75" aria-label="Instagram"><Instagram className="w-5 h-5" /></a>
+              <a href="#" className="hover:text-white/70 transition-colors text-white/75" aria-label="Twitter"><Twitter className="w-5 h-5" /></a>
+            </div>
+            <p className="text-sm text-white/75 mb-3">Подпишитесь на нашу рассылку</p>
+            <form className="flex w-full gap-0" onSubmit={(e) => e.preventDefault()}>
+              <input
+                type="email"
+                placeholder="Email address"
+                className="bg-black/30 border border-white/15 text-white placeholder-white/40 px-4 py-2.5 text-sm outline-none flex-grow focus:border-white/40 rounded-l-sm"
+              />
+              <button
+                type="submit"
+                className="bg-white/10 hover:bg-white/20 border border-white/15 border-l-0 transition-colors px-5 py-2.5 text-sm font-medium rounded-r-sm"
+              >
+                Join
+              </button>
+            </form>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-white/15 mx-5" />
+
+          {/* Footer links */}
+          <div className="px-5 py-4 flex flex-col items-center text-xs text-white/50 gap-3">
+            <p>&copy; 2026 SARPO. All rights reserved.</p>
+            <div className="flex gap-4 flex-wrap justify-center">
+              <span className="hover:text-white transition-colors cursor-pointer">Политика конфиденциальности</span>
+              <span className="hover:text-white transition-colors cursor-pointer">Условия использования</span>
+              <span className="hover:text-white transition-colors cursor-pointer">Публичная оферта</span>
+            </div>
+          </div>
+
+          {/* Close button */}
+          <div className="px-5 pb-6 pt-2">
             <button
               onClick={() => setMenuOpen(false)}
-              className="text-white p-1"
-              aria-label="Закрыть"
+              className="w-full py-3 rounded-sm text-white/80 border border-white/20 text-sm font-medium hover:bg-white/10 transition-colors"
             >
-              <X className="w-5 h-5" />
+              Закрыть
             </button>
           </div>
-          {/* Drawer Links */}
-          <nav className="py-2">
-            <ul>
-              {navLinks.map((link) => (
-                <li key={link.collection}>
-                  <button
-                    onClick={() => {
-                      onCollectionNavigate(link.collection);
-                      setMenuOpen(false);
-                    }}
-                    className="w-full px-6 py-3.5 text-sm text-[#1A1314] hover:bg-[#F9F7F5] text-left transition-colors border-b border-gray-100"
-                  >
-                    {link.title}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
         </div>
       </div>
     </>
