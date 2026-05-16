@@ -86,27 +86,28 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
           className="text-white px-4 md:px-12 flex items-center justify-between relative"
           style={{ backgroundColor: '#680018', minHeight: '56px' }}
         >
-          {/* Mobile: Hamburger menu / Close */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden p-2 -ml-2 text-white"
-            aria-label="Меню"
-          >
-            {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Left side: hamburger + logo */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="md:hidden p-2 -ml-2 text-white"
+              aria-label="Меню"
+            >
+              {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
 
-          {/* Logo — left-aligned on all screens */}
-          <button
-            onClick={() => onNavigate('home')}
-            className="flex items-center py-2 md:py-3"
-          >
-            <img
-              src="/images/sarpo_logo.svg"
-              alt="SARPO"
-              className="h-10 md:h-14 w-auto select-none"
-              draggable={false}
-            />
-          </button>
+            <button
+              onClick={() => onNavigate('home')}
+              className="flex items-center py-2 md:py-3"
+            >
+              <img
+                src="/images/sarpo_logo.svg"
+                alt="SARPO"
+                className="h-10 md:h-14 w-auto select-none"
+                draggable={false}
+              />
+            </button>
+          </div>
 
           {/* Right side: search + cart */}
           <div className="flex items-center gap-2 md:gap-4">
