@@ -499,8 +499,14 @@ function CatalogPage({
   const filteredProducts = products
     .filter((p) => {
       if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-      if (selectedCollections.length > 0 && !selectedCollections.includes(p.collection)) return false;
-      if (selectedCollections.includes('Новинки') && !p.isNew) return false;
+      if (selectedCollections.length > 0) {
+        const nonNovinkiCollections = selectedCollections.filter((c) => c !== 'Новинки');
+        const wantsNovinki = selectedCollections.includes('Новинки');
+        // Product passes if it matches a regular collection OR it's new and user wants novinki
+        const matchesRegularCollection = nonNovinkiCollections.length > 0 && nonNovinkiCollections.includes(p.collection);
+        const matchesNovinki = wantsNovinki && p.isNew;
+        if (!matchesRegularCollection && !matchesNovinki) return false;
+      }
       if (p.price < priceMin || p.price > priceMax) return false;
       return true;
     })
