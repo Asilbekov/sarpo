@@ -13,7 +13,6 @@ import {
   Phone,
   MapPin,
   Wallet,
-  CreditCard,
   Facebook,
   Instagram,
   Twitter,
@@ -138,7 +137,7 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
               onClick={() => window.open('tel:+998901234567')}
               className="bg-white p-2 md:p-2.5 rounded-full hover:scale-105 transition-all duration-300"
               style={{ color: '#680018' }}
-              aria-label="Operator bilan bog'lanish"
+              aria-label="Связаться с оператором"
             >
               <Phone className="w-4 h-4 md:w-5 md:h-5" />
             </button>
@@ -1020,42 +1019,63 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                 <button
                   onClick={() => setPaymentMethod('payme')}
                   className={
-                    'rounded-md py-3 md:py-4 flex items-center justify-center flex-col gap-1.5 text-[10px] md:text-sm font-medium border-2 transition-all duration-300 ' +
-                    (paymentMethod === 'payme' ? 'border-[#680018] bg-[#680018]/5' : 'border-gray-200 hover:border-[#680018] bg-white')
+                    'border-2 bg-white rounded-md py-3 md:py-4 flex items-center justify-center font-bold relative text-sm md:text-lg transition-all duration-300 ' +
+                    (paymentMethod === 'payme' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
                   }
+                  style={{ color: '#38B2AC' }}
                 >
-                  <Wallet className="w-5 h-5 md:w-6 md:h-6 text-[#680018]" />
-                  <span className="text-[#1A1314]">Payme</span>
+                  <span className="italic">payme</span>
                   {paymentMethod === 'payme' && (
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#680018] mt-0.5" />
+                    <div
+                      className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: '#680018' }}
+                    >
+                      <svg viewBox="0 0 10 10" className="w-2.5 h-2.5 fill-white">
+                        <path d="M3.5 7.5L1.5 5.5L2.2 4.8L3.5 6.1L7.8 1.8L8.5 2.5L3.5 7.5Z" />
+                      </svg>
+                    </div>
                   )}
                 </button>
                 {/* Uzum */}
                 <button
                   onClick={() => setPaymentMethod('uzum')}
                   className={
-                    'rounded-md py-3 md:py-4 flex items-center justify-center flex-col gap-1.5 text-[10px] md:text-sm font-medium border-2 transition-all duration-300 ' +
-                    (paymentMethod === 'uzum' ? 'border-[#680018] bg-[#680018]/5' : 'border-gray-200 hover:border-[#680018] bg-white')
+                    'border-2 bg-white rounded-md py-3 md:py-4 flex items-center justify-center font-bold relative text-sm md:text-lg transition-all duration-300 ' +
+                    (paymentMethod === 'uzum' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
                   }
+                  style={{ color: '#7B2FF2' }}
                 >
-                  <CreditCard className="w-5 h-5 md:w-6 md:h-6 text-[#680018]" />
-                  <span className="text-[#1A1314]">Uzum</span>
+                  uzum
                   {paymentMethod === 'uzum' && (
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#680018] mt-0.5" />
+                    <div
+                      className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: '#680018' }}
+                    >
+                      <svg viewBox="0 0 10 10" className="w-2.5 h-2.5 fill-white">
+                        <path d="M3.5 7.5L1.5 5.5L2.2 4.8L3.5 6.1L7.8 1.8L8.5 2.5L3.5 7.5Z" />
+                      </svg>
+                    </div>
                   )}
                 </button>
                 {/* Click */}
                 <button
                   onClick={() => setPaymentMethod('click')}
                   className={
-                    'rounded-md py-3 md:py-4 flex items-center justify-center flex-col gap-1.5 text-[10px] md:text-sm font-medium border-2 transition-all duration-300 ' +
-                    (paymentMethod === 'click' ? 'border-[#680018] bg-[#680018]/5' : 'border-gray-200 hover:border-[#680018] bg-white')
+                    'border-2 bg-white rounded-md py-3 md:py-4 flex items-center justify-center font-bold relative text-sm md:text-lg transition-all duration-300 ' +
+                    (paymentMethod === 'click' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
                   }
+                  style={{ color: '#3182CE' }}
                 >
-                  <CreditCard className="w-5 h-5 md:w-6 md:h-6 text-[#680018]" />
-                  <span className="text-[#1A1314]">Click</span>
+                  click
                   {paymentMethod === 'click' && (
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#680018] mt-0.5" />
+                    <div
+                      className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: '#680018' }}
+                    >
+                      <svg viewBox="0 0 10 10" className="w-2.5 h-2.5 fill-white">
+                        <path d="M3.5 7.5L1.5 5.5L2.2 4.8L3.5 6.1L7.8 1.8L8.5 2.5L3.5 7.5Z" />
+                      </svg>
+                    </div>
                   )}
                 </button>
               </div>
@@ -1077,7 +1097,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
               className="w-full flex items-center justify-center gap-2 py-3 md:py-4 font-medium rounded-md transition-all duration-300 tracking-wide border-2 border-[#680018] text-[#680018] hover:bg-[#680018] hover:text-white mb-3"
             >
               <Phone className="w-4 h-4 md:w-5 md:h-5" />
-              Operator bilan bog'lanish
+              Связаться с оператором
             </button>
 
             <button
