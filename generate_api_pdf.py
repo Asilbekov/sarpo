@@ -28,15 +28,16 @@ TABLE_ROW_EVEN     = colors.white
 TABLE_ROW_ODD      = BG_SURFACE
 
 # ━━ Font Registration ━━
-pdfmetrics.registerFont(TTFont('Times New Roman', '/usr/share/fonts/truetype/english/Times-New-Roman.ttf'))
-pdfmetrics.registerFont(TTFont('Calibri', '/usr/share/fonts/truetype/english/calibri-regular.ttf'))
-pdfmetrics.registerFont(TTFont('SimHei', '/usr/share/fonts/truetype/chinese/SimHei.ttf'))
-pdfmetrics.registerFont(TTFont('DejaVuSans', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'))
+pdfmetrics.registerFont(TTFont('DejaVuSerif', '/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf'))
+pdfmetrics.registerFont(TTFont('DejaVuSerif-Bold', '/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf'))
+pdfmetrics.registerFont(TTFont('DejaVuSans', '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'))
+pdfmetrics.registerFont(TTFont('DejaVuSans-Bold', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'))
+pdfmetrics.registerFont(TTFont('DejaVuMono', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'))
+pdfmetrics.registerFont(TTFont('DejaVuMono-Bold', '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf'))
 
-registerFontFamily('Times New Roman', normal='Times New Roman', bold='Times New Roman')
-registerFontFamily('Calibri', normal='Calibri', bold='Calibri')
-registerFontFamily('SimHei', normal='SimHei', bold='SimHei')
-registerFontFamily('DejaVuSans', normal='DejaVuSans', bold='DejaVuSans')
+registerFontFamily('DejaVuSerif', normal='DejaVuSerif', bold='DejaVuSerif-Bold')
+registerFontFamily('DejaVuSans', normal='DejaVuSans', bold='DejaVuSans-Bold')
+registerFontFamily('DejaVuMono', normal='DejaVuMono', bold='DejaVuMono-Bold')
 
 # ━━ Page Setup ━━
 PAGE_W, PAGE_H = A4
@@ -50,53 +51,53 @@ OUTPUT_PATH = '/home/z/my-project/sarpo_api_documentation.pdf'
 
 # ━━ Styles ━━
 title_style = ParagraphStyle(
-    name='DocTitle', fontName='Times New Roman', fontSize=28,
+    name='DocTitle', fontName='DejaVuSerif', fontSize=28,
     leading=34, textColor=ACCENT, alignment=TA_LEFT, spaceAfter=6
 )
 subtitle_style = ParagraphStyle(
-    name='DocSubtitle', fontName='Times New Roman', fontSize=14,
+    name='DocSubtitle', fontName='DejaVuSerif', fontSize=14,
     leading=20, textColor=TEXT_MUTED, alignment=TA_LEFT, spaceAfter=24
 )
 h1_style = ParagraphStyle(
-    name='H1', fontName='Times New Roman', fontSize=20,
+    name='H1', fontName='DejaVuSerif', fontSize=20,
     leading=26, textColor=ACCENT, spaceBefore=24, spaceAfter=12
 )
 h2_style = ParagraphStyle(
-    name='H2', fontName='Times New Roman', fontSize=15,
+    name='H2', fontName='DejaVuSerif', fontSize=15,
     leading=20, textColor=TEXT_PRIMARY, spaceBefore=18, spaceAfter=8
 )
 h3_style = ParagraphStyle(
-    name='H3', fontName='Times New Roman', fontSize=12,
+    name='H3', fontName='DejaVuSerif', fontSize=12,
     leading=16, textColor=ACCENT, spaceBefore=12, spaceAfter=6
 )
 body_style = ParagraphStyle(
-    name='Body', fontName='Times New Roman', fontSize=10.5,
+    name='Body', fontName='DejaVuSerif', fontSize=10.5,
     leading=17, textColor=TEXT_PRIMARY, alignment=TA_JUSTIFY, spaceAfter=6
 )
 code_style = ParagraphStyle(
-    name='Code', fontName='DejaVuSans', fontSize=9,
+    name='Code', fontName='DejaVuMono', fontSize=9,
     leading=14, textColor=colors.HexColor('#c7254e'),
     backColor=colors.HexColor('#f9f2f4'), spaceAfter=6,
     leftIndent=12, rightIndent=12, spaceBefore=4
 )
 muted_style = ParagraphStyle(
-    name='Muted', fontName='Times New Roman', fontSize=9.5,
+    name='Muted', fontName='DejaVuSerif', fontSize=9.5,
     leading=15, textColor=TEXT_MUTED, alignment=TA_LEFT, spaceAfter=4
 )
 table_header_style = ParagraphStyle(
-    name='TH', fontName='Times New Roman', fontSize=10,
+    name='TH', fontName='DejaVuSerif', fontSize=10,
     leading=14, textColor=TABLE_HEADER_TEXT, alignment=TA_CENTER
 )
 table_cell_style = ParagraphStyle(
-    name='TC', fontName='Times New Roman', fontSize=9.5,
+    name='TC', fontName='DejaVuSerif', fontSize=9.5,
     leading=14, textColor=TEXT_PRIMARY, alignment=TA_LEFT
 )
 table_cell_center = ParagraphStyle(
-    name='TCC', fontName='Times New Roman', fontSize=9.5,
+    name='TCC', fontName='DejaVuSerif', fontSize=9.5,
     leading=14, textColor=TEXT_PRIMARY, alignment=TA_CENTER
 )
 table_code_style = ParagraphStyle(
-    name='TCode', fontName='DejaVuSans', fontSize=8.5,
+    name='TCode', fontName='DejaVuMono', fontSize=8.5,
     leading=13, textColor=colors.HexColor('#c7254e'), alignment=TA_LEFT
 )
 
@@ -116,7 +117,7 @@ def make_method_badge(method):
     }
     bg = color_map.get(method, ACCENT)
     return Paragraph(f'<b>{method}</b>', ParagraphStyle(
-        name=f'Badge_{method}', fontName='DejaVuSans', fontSize=8.5,
+        name=f'Badge_{method}', fontName='DejaVuMono', fontSize=8.5,
         leading=13, textColor=colors.white, alignment=TA_CENTER
     ))
 
@@ -127,11 +128,11 @@ def make_endpoint_table(method, path, description, query_params=None, request_bo
     # Method + Path header
     method_p = make_method_badge(method)
     path_p = Paragraph(f'<b>{path}</b>', ParagraphStyle(
-        name='EndpointPath', fontName='DejaVuSans', fontSize=11,
+        name='EndpointPath', fontName='DejaVuMono', fontSize=11,
         leading=16, textColor=TEXT_PRIMARY, alignment=TA_LEFT
     ))
     desc_p = Paragraph(description, ParagraphStyle(
-        name='EndpointDesc', fontName='Times New Roman', fontSize=10,
+        name='EndpointDesc', fontName='DejaVuSerif', fontSize=10,
         leading=15, textColor=TEXT_MUTED, alignment=TA_LEFT
     ))
     
@@ -224,7 +225,7 @@ story.append(Spacer(1, 80))
 story.append(Paragraph('<b>SARPO</b>', title_style))
 story.append(Spacer(1, 8))
 story.append(Paragraph('API Documentation', ParagraphStyle(
-    name='BigSubtitle', fontName='Times New Roman', fontSize=22,
+    name='BigSubtitle', fontName='DejaVuSerif', fontSize=22,
     leading=28, textColor=TEXT_PRIMARY, alignment=TA_LEFT
 )))
 story.append(Spacer(1, 16))
@@ -256,7 +257,7 @@ toc_items = [
 for item, _ in toc_items:
     indent = 24 if item.startswith('   ') else 0
     story.append(Paragraph(item.strip(), ParagraphStyle(
-        name=f'TOC_{item.strip()}', fontName='Times New Roman', fontSize=11,
+        name=f'TOC_{item.strip()}', fontName='DejaVuSerif', fontSize=11,
         leading=18, textColor=ACCENT if not item.startswith('   ') else TEXT_PRIMARY,
         leftIndent=indent, spaceAfter=3
     )))
@@ -494,7 +495,7 @@ for i, (num, method, endpoint, desc, required) in enumerate(endpoints):
     summary_data.append([
         Paragraph(num, table_cell_center),
         Paragraph(f'<b>{method}</b>', ParagraphStyle(
-            name=f'SumBadge_{i}', fontName='DejaVuSans', fontSize=8,
+            name=f'SumBadge_{i}', fontName='DejaVuMono', fontSize=8,
             leading=12, textColor={
                 'GET': colors.HexColor('#0d6efd'),
                 'POST': colors.HexColor('#198754'),
