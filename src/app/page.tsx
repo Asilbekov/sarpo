@@ -109,7 +109,7 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
             </button>
           </div>
 
-          {/* Right side: search + cart */}
+          {/* Right side: search + phone + cart */}
           <div className="flex items-center gap-2 md:gap-4">
             {/* Mobile: Search icon button */}
             <button
@@ -132,6 +132,17 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
                 className="bg-white text-gray-800 text-sm rounded-full pl-10 pr-5 py-2.5 w-[280px] lg:w-[320px] outline-none border-0 focus:ring-2 focus:ring-white/30"
               />
             </form>
+
+            {/* Operator bilan bog'lanish button */}
+            <button
+              onClick={() => window.open('tel:+998901234567')}
+              className="bg-white p-2 md:p-2.5 rounded-full hover:scale-105 transition-all duration-300"
+              style={{ color: '#680018' }}
+              aria-label="Operator bilan bog'lanish"
+            >
+              <Phone className="w-4 h-4 md:w-5 md:h-5" />
+            </button>
+
             <button
               onClick={() => onNavigate('cart')}
               className="bg-white p-2 md:p-2.5 rounded-full relative hover:scale-105 transition-transform"
@@ -303,11 +314,14 @@ function ProductCard({
 function HomePage({
   onNavigate,
   onSelectProduct,
+  onCollectionNavigate,
 }: {
   onNavigate: (page: PageView) => void;
   onSelectProduct: (product: Product) => void;
+  onCollectionNavigate: (collection: string) => void;
 }) {
   const recommendedProducts = products.slice(0, 10);
+  const newProducts = products.filter((p) => p.isNew === true);
   const [slideIndex, setSlideIndex] = useState(0);
 
   useEffect(() => {
@@ -423,6 +437,32 @@ function HomePage({
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
           {recommendedProducts.map((product) => (
+            <ProductCard key={product.id} product={product} onSelect={onSelectProduct} />
+          ))}
+        </div>
+      </section>
+
+      {/* Новинки Section */}
+      <section className="py-10 md:py-20 px-4 md:px-12 max-w-[1400px] mx-auto">
+        <div className="flex justify-between items-end mb-6 md:mb-10">
+          <div>
+            <h2 className="text-xl md:text-4xl font-medium text-[#1A1314] mb-1 md:mb-2">
+              Новинки
+            </h2>
+            <p className="text-[#706567] text-[11px] md:text-sm">
+              Свежие поступления этого сезона
+            </p>
+          </div>
+          <button
+            onClick={() => onCollectionNavigate('Новинки')}
+            className="text-[11px] md:text-sm font-medium flex items-center gap-1 text-[#680018] hover:text-[#2D020C] transition-colors"
+          >
+            Все <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+          {newProducts.map((product) => (
             <ProductCard key={product.id} product={product} onSelect={onSelectProduct} />
           ))}
         </div>
@@ -975,60 +1015,48 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
 
             <div className="mb-6 md:mb-8">
               <h3 className="text-xs md:text-sm text-[#706567] mb-2.5 md:mb-3">Методы оплаты</h3>
-              <div className="grid grid-cols-2 gap-2.5 md:gap-3 mb-2.5 md:mb-3">
+              <div className="grid grid-cols-3 gap-2.5 md:gap-3">
+                {/* Payme */}
                 <button
                   onClick={() => setPaymentMethod('payme')}
                   className={
-                    'border-2 bg-white rounded-md py-2.5 md:py-3 flex items-center justify-center font-bold relative text-sm md:text-lg ' +
-                    (paymentMethod === 'payme' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
+                    'rounded-md py-3 md:py-4 flex items-center justify-center flex-col gap-1.5 text-[10px] md:text-sm font-medium border-2 transition-all duration-300 ' +
+                    (paymentMethod === 'payme' ? 'border-[#680018] bg-[#680018]/5' : 'border-gray-200 hover:border-[#680018] bg-white')
                   }
-                  style={{ color: '#38B2AC' }}
                 >
-                  <span className="italic">payme</span>
+                  <Wallet className="w-5 h-5 md:w-6 md:h-6 text-[#680018]" />
+                  <span className="text-[#1A1314]">Payme</span>
                   {paymentMethod === 'payme' && (
-                    <div
-                      className="absolute top-1 right-1 w-3 h-3 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: '#680018' }}
-                    >
-                      <svg viewBox="0 0 10 10" className="w-2 h-2 fill-white">
-                        <path d="M3.5 7.5L1.5 5.5L2.2 4.8L3.5 6.1L7.8 1.8L8.5 2.5L3.5 7.5Z" />
-                      </svg>
-                    </div>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#680018] mt-0.5" />
                   )}
                 </button>
+                {/* Uzum */}
+                <button
+                  onClick={() => setPaymentMethod('uzum')}
+                  className={
+                    'rounded-md py-3 md:py-4 flex items-center justify-center flex-col gap-1.5 text-[10px] md:text-sm font-medium border-2 transition-all duration-300 ' +
+                    (paymentMethod === 'uzum' ? 'border-[#680018] bg-[#680018]/5' : 'border-gray-200 hover:border-[#680018] bg-white')
+                  }
+                >
+                  <CreditCard className="w-5 h-5 md:w-6 md:h-6 text-[#680018]" />
+                  <span className="text-[#1A1314]">Uzum</span>
+                  {paymentMethod === 'uzum' && (
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#680018] mt-0.5" />
+                  )}
+                </button>
+                {/* Click */}
                 <button
                   onClick={() => setPaymentMethod('click')}
                   className={
-                    'border-2 bg-white rounded-md py-2.5 md:py-3 flex items-center justify-center font-bold text-sm md:text-lg ' +
-                    (paymentMethod === 'click' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
+                    'rounded-md py-3 md:py-4 flex items-center justify-center flex-col gap-1.5 text-[10px] md:text-sm font-medium border-2 transition-all duration-300 ' +
+                    (paymentMethod === 'click' ? 'border-[#680018] bg-[#680018]/5' : 'border-gray-200 hover:border-[#680018] bg-white')
                   }
-                  style={{ color: '#3182CE' }}
                 >
-                  click
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5 md:gap-3">
-                <button
-                  onClick={() => setPaymentMethod('cash')}
-                  className={
-                    'rounded-md py-2.5 md:py-3 flex items-center justify-center flex-col gap-1 text-[10px] md:text-sm text-[#1A1314] border-2 ' +
-                    (paymentMethod === 'cash' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
-                  }
-                  style={{ backgroundColor: '#F9F5F0' }}
-                >
-                  <Wallet className="w-4 h-4 md:w-5 md:h-5 text-[#680018]" />
-                  Наличные
-                </button>
-                <button
-                  onClick={() => setPaymentMethod('card')}
-                  className={
-                    'rounded-md py-2.5 md:py-3 flex items-center justify-center flex-col gap-1 text-[10px] md:text-sm text-[#1A1314] border-2 ' +
-                    (paymentMethod === 'card' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
-                  }
-                  style={{ backgroundColor: '#F9F5F0' }}
-                >
-                  <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-[#680018]" />
-                  Карта
+                  <CreditCard className="w-5 h-5 md:w-6 md:h-6 text-[#680018]" />
+                  <span className="text-[#1A1314]">Click</span>
+                  {paymentMethod === 'click' && (
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#680018] mt-0.5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -1042,6 +1070,15 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                 </span>
               </div>
             )}
+
+            {/* Operator bilan bog'lanish */}
+            <button
+              onClick={() => window.open('tel:+998901234567')}
+              className="w-full flex items-center justify-center gap-2 py-3 md:py-4 font-medium rounded-md transition-all duration-300 tracking-wide border-2 border-[#680018] text-[#680018] hover:bg-[#680018] hover:text-white mb-3"
+            >
+              <Phone className="w-4 h-4 md:w-5 md:h-5" />
+              Operator bilan bog'lanish
+            </button>
 
             <button
               onClick={handleOrder}
@@ -1079,18 +1116,30 @@ export default function Home() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F9F7F5' }}>
       <Header onNavigate={navigate} currentPage={currentPage} onSearch={(query) => { setCatalogSearch(query); setCatalogCollection(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
       <main className="flex-1">
-        {currentPage === 'home' && (
-          <HomePage onNavigate={navigate} onSelectProduct={selectProduct} />
-        )}
-        {currentPage === 'catalog' && (
-          <CatalogPage key={`${catalogSearch}-${catalogCollection}`} onSelectProduct={selectProduct} initialSearch={catalogSearch} initialCollection={catalogCollection} />
-        )}
-        {currentPage === 'product' && selectedProduct && (
-          <ProductPage product={selectedProduct} onNavigate={navigate} onSelectProduct={selectProduct} />
-        )}
-        {currentPage === 'cart' && (
-          <CartPage onNavigate={navigate} />
-        )}
+        <div
+          key={currentPage + (selectedProduct?.id || '')}
+          className="animate-fadeIn"
+          style={{ animation: 'fadeIn 0.4s ease-out' }}
+        >
+          {currentPage === 'home' && (
+            <HomePage onNavigate={navigate} onSelectProduct={selectProduct} onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+          )}
+          {currentPage === 'catalog' && (
+            <CatalogPage key={`${catalogSearch}-${catalogCollection}`} onSelectProduct={selectProduct} initialSearch={catalogSearch} initialCollection={catalogCollection} />
+          )}
+          {currentPage === 'product' && selectedProduct && (
+            <ProductPage product={selectedProduct} onNavigate={navigate} onSelectProduct={selectProduct} />
+          )}
+          {currentPage === 'cart' && (
+            <CartPage onNavigate={navigate} />
+          )}
+        </div>
+        <style jsx>{`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
       </main>
       <Footer onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
     </div>
