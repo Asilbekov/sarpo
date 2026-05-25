@@ -927,7 +927,8 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [orderLoading, setOrderLoading] = useState(false);
-  const [orderPlaced, setOrderPlaced] = useState(false);
+  const orderPlaced = useCartStore((s) => s.orderPlaced);
+  const setOrderPlaced = useCartStore((s) => s.setOrderPlaced);
 
   // Cycle sort: null → desc → asc → null
   const handleColumnSort = (column: CartSortColumn) => {
