@@ -1032,8 +1032,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
               Общая сумма
               <SortIcon column="total" />
             </button>
-            <div className="col-span-2 flex items-center justify-center">Статус</div>
-            <div className="col-span-2 flex items-center justify-center">Действие</div>
+            <div className="col-span-4 flex items-center justify-center">Статус</div>
           </div>
 
           {/* Mobile: sort buttons row */}
@@ -1123,7 +1122,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                   </span>
                 </div>
                 {/* Status */}
-                <div className="hidden md:flex col-span-2 items-center justify-center">
+                <div className="hidden md:flex col-span-4 items-center justify-center">
                   <span className={`text-sm font-medium px-3 py-1 rounded-md whitespace-nowrap ${
                     orderPlaced
                       ? 'bg-green-100 text-green-700'
@@ -1132,16 +1131,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                     {orderPlaced ? 'оформлен' : 'в корзине'}
                   </span>
                 </div>
-                {/* Delete */}
-                <div className="hidden md:flex col-span-2 items-center justify-center">
-                  <button
-                    onClick={() => removeItem(item.product.id)}
-                    className="text-[#680018] hover:text-[#2D020C] transition-colors"
-                    aria-label="Удалить"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
+
               </div>
             ))}
             {items.length === 0 && (
