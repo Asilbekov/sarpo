@@ -867,7 +867,7 @@ function ProductPage({
 }
 
 /* ──────────────── CartPage ──────────────── */
-type CartSortColumn = 'name' | 'quantity' | 'total';
+type CartSortColumn = 'name' | 'quantity' | 'total' | 'status';
 type CartSortDirection = 'desc' | 'asc';
 
 interface CartSortState {
@@ -917,6 +917,12 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
       }
       case 'total': {
         const cmp = (a.product.price * a.quantity) - (b.product.price * b.quantity);
+        return cartSort.direction === 'asc' ? cmp : -cmp;
+      }
+      case 'status': {
+        const statusA = orderPlaced ? 'оформлен' : 'в корзине';
+        const statusB = orderPlaced ? 'оформлен' : 'в корзине';
+        const cmp = statusA.localeCompare(statusB, 'ru');
         return cartSort.direction === 'asc' ? cmp : -cmp;
       }
       default: return 0;
@@ -1027,12 +1033,18 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
             </button>
             <button
               onClick={() => handleColumnSort('total')}
-              className="col-span-2 flex items-center justify-end hover:text-[#680018] transition-colors select-none"
+              className="col-span-3 flex items-center justify-center hover:text-[#680018] transition-colors select-none"
             >
               Общая сумма
               <SortIcon column="total" />
             </button>
-            <div className="col-span-4 flex items-center justify-center">Статус</div>
+            <button
+              onClick={() => handleColumnSort('status')}
+              className="col-span-3 flex items-center justify-center hover:text-[#680018] transition-colors select-none"
+            >
+              Статус
+              <SortIcon column="status" />
+            </button>
           </div>
 
           {/* Mobile: sort buttons row */}
@@ -1067,6 +1079,16 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                 }`}
               >
                 Сумма <SortIcon column="total" />
+              </button>
+              <button
+                onClick={() => handleColumnSort('status')}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs border transition-colors ${
+                  cartSort.column === 'status'
+                    ? 'border-[#680018] text-[#680018] bg-[#680018]/5'
+                    : 'border-gray-200 text-[#1A1314] bg-white'
+                }`}
+              >
+                Статус <SortIcon column="status" />
               </button>
             </div>
           )}
@@ -1116,13 +1138,13 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                   </div>
                 </div>
                 {/* Total */}
-                <div className="col-span-3 md:col-span-2 flex justify-end items-center">
+                <div className="col-span-3 md:col-span-3 flex justify-center items-center">
                   <span className="text-sm md:text-lg font-medium text-[#1A1314]">
                     {(item.product.price * item.quantity).toFixed(0)} $
                   </span>
                 </div>
                 {/* Status */}
-                <div className="hidden md:flex col-span-4 items-center justify-center">
+                <div className="hidden md:flex col-span-3 items-center justify-center">
                   <span className={`text-sm font-medium px-3 py-1 rounded-md whitespace-nowrap ${
                     orderPlaced
                       ? 'bg-green-100 text-green-700'
