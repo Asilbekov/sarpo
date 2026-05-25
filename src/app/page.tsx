@@ -18,6 +18,8 @@ import {
   Twitter,
   Menu,
   X,
+  ArrowUpDown,
+  ChevronUp,
 } from 'lucide-react';
 import { products, heroSlides, collections, productGallery, Product } from '@/lib/sarpo-data';
 import { useCartStore } from '@/lib/cart-store';
@@ -865,21 +867,132 @@ function ProductPage({
 }
 
 /* ──────────────── CartPage ──────────────── */
+type CartSortColumn = 'name' | 'quantity' | 'total';
+type CartSortDirection = 'desc' | 'asc';
+
+interface CartSortState {
+  column: CartSortColumn | null;
+  direction: CartSortDirection;
+}
+
 function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
   const items = useCartStore((s) => s.items);
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const clearCart = useCartStore((s) => s.clearCart);
   const total = useCartStore((s) => s.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0));
   const [paymentMethod, setPaymentMethod] = useState('payme');
+  const [cartSort, setCartSort] = useState<CartSortState>({ column: null, direction: 'asc' });
+  const [customerName, setCustomerName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [orderLoading, setOrderLoading] = useState(false);
 
-  const handleOrder = () => {
+  // Cycle sort: null → desc → asc → null
+  const handleColumnSort = (column: CartSortColumn) => {
+    setCartSort((prev) => {
+      if (prev.column !== column) {
+        // New column: start with desc
+        return { column, direction: 'desc' };
+      }
+      if (prev.direction === 'desc') {
+        return { column, direction: 'asc' };
+      }
+      // asc → reset (no sort)
+      return { column: null, direction: 'asc' };
+    });
+  };
+
+  // Sort cart items
+  const sortedItems = [...items].sort((a, b) => {
+    if (!cartSort.column) return 0;
+    switch (cartSort.column) {
+      case 'name': {
+        const cmp = a.product.name.localeCompare(b.product.name, 'ru');
+        return cartSort.direction === 'asc' ? cmp : -cmp;
+      }
+      case 'quantity': {
+        const cmp = a.quantity - b.quantity;
+        return cartSort.direction === 'asc' ? cmp : -cmp;
+      }
+      case 'total': {
+        const cmp = (a.product.price * a.quantity) - (b.product.price * b.quantity);
+        return cartSort.direction === 'asc' ? cmp : -cmp;
+      }
+      default: return 0;
+    }
+  });
+
+  const SortIcon = ({ column }: { column: CartSortColumn }) => {
+    const isActive = cartSort.column === column;
+    if (!isActive) {
+      return <ArrowUpDown className="w-3 h-3 md:w-3.5 md:h-3.5 text-gray-300 ml-1" />;
+    }
+    return (
+      <ChevronUp
+        className={`w-3.5 h-3.5 md:w-4 md:h-4 ml-1 transition-transform duration-200 text-[#680018] ${
+          cartSort.direction === 'desc' ? 'rotate-180' : ''
+        }`}
+      />
+    );
+  };
+
+  const handleOrder = async () => {
     if (items.length === 0) {
       toast.error('Корзина пуста');
       return;
     }
-    toast.success('Заказ оформлен!', {
-      description: `Общая сумма: ${total.toFixed(0)} $`,
-    });
+    if (!customerName.trim()) {
+      toast.error('Введите имя');
+      return;
+    }
+    if (!phone.trim()) {
+      toast.error('Введите номер телефона');
+      return;
+    }
+    if (!address.trim()) {
+      toast.error('Введите адрес');
+      return;
+    }
+
+    setOrderLoading(true);
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: customerName.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          paymentMethod,
+          items: items.map((item) => ({
+            productId: item.product.id,
+            name: item.product.name,
+            price: item.product.price,
+            quantity: item.quantity,
+            image: item.product.image,
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Ошибка при создании заказа');
+      }
+
+      toast.success('Заказ оформлен!', {
+        description: `Статус: оформлен | Сумма: ${total.toFixed(0)} $`,
+      });
+      clearCart();
+      setCustomerName('');
+      setPhone('');
+      setAddress('');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Ошибка при оформлении заказа';
+      toast.error(message);
+    } finally {
+      setOrderLoading(false);
+    }
   };
 
   return (
@@ -894,16 +1007,71 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
       <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
         {/* Left: Cart Items */}
         <div className="flex-1 bg-white p-4 md:p-6 shadow-sm rounded-md border border-gray-100">
-          {/* Table header */}
+
+          {/* Table header — clickable columns */}
           <div className="hidden md:grid grid-cols-12 text-xs md:text-sm font-medium text-[#1A1314] border-b border-gray-200 pb-3 md:pb-4 mb-3 md:mb-4">
             <div className="col-span-2">Фото</div>
-            <div className="col-span-4">Наименование продукта</div>
-            <div className="col-span-3 text-center">Количество</div>
-            <div className="col-span-3 text-right">Общая сумма</div>
+            <button
+              onClick={() => handleColumnSort('name')}
+              className="col-span-4 flex items-center hover:text-[#680018] transition-colors select-none text-left"
+            >
+              Наименование продукта
+              <SortIcon column="name" />
+            </button>
+            <button
+              onClick={() => handleColumnSort('quantity')}
+              className="col-span-3 flex items-center justify-center hover:text-[#680018] transition-colors select-none"
+            >
+              Количество
+              <SortIcon column="quantity" />
+            </button>
+            <button
+              onClick={() => handleColumnSort('total')}
+              className="col-span-3 flex items-center justify-end hover:text-[#680018] transition-colors select-none"
+            >
+              Общая сумма
+              <SortIcon column="total" />
+            </button>
           </div>
 
+          {/* Mobile: sort buttons row */}
+          {items.length > 0 && (
+            <div className="md:hidden flex flex-wrap gap-2 mb-3 pb-3 border-b border-gray-200">
+              <button
+                onClick={() => handleColumnSort('name')}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs border transition-colors ${
+                  cartSort.column === 'name'
+                    ? 'border-[#680018] text-[#680018] bg-[#680018]/5'
+                    : 'border-gray-200 text-[#1A1314] bg-white'
+                }`}
+              >
+                Наименование <SortIcon column="name" />
+              </button>
+              <button
+                onClick={() => handleColumnSort('quantity')}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs border transition-colors ${
+                  cartSort.column === 'quantity'
+                    ? 'border-[#680018] text-[#680018] bg-[#680018]/5'
+                    : 'border-gray-200 text-[#1A1314] bg-white'
+                }`}
+              >
+                Кол-во <SortIcon column="quantity" />
+              </button>
+              <button
+                onClick={() => handleColumnSort('total')}
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs border transition-colors ${
+                  cartSort.column === 'total'
+                    ? 'border-[#680018] text-[#680018] bg-[#680018]/5'
+                    : 'border-gray-200 text-[#1A1314] bg-white'
+                }`}
+              >
+                Сумма <SortIcon column="total" />
+              </button>
+            </div>
+          )}
+
           <div className="space-y-4 md:space-y-6">
-            {items.map((item) => (
+            {sortedItems.map((item) => (
               <div
                 key={item.product.id}
                 className="grid grid-cols-12 items-center text-xs md:text-sm gap-2"
@@ -993,6 +1161,8 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                 <input
                   type="text"
                   placeholder="Имя"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
                   className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
                   style={{ backgroundColor: '#EFE6E1' }}
                 />
@@ -1002,6 +1172,8 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                 <input
                   type="tel"
                   placeholder="Телефон"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
                   style={{ backgroundColor: '#EFE6E1' }}
                 />
@@ -1011,6 +1183,8 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                 <input
                   type="text"
                   placeholder="Адрес"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
                   className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
                   style={{ backgroundColor: '#EFE6E1' }}
                 />
@@ -1108,10 +1282,11 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
 
             <button
               onClick={handleOrder}
-              className="w-full text-white py-3 md:py-4 font-medium rounded-md transition-colors tracking-wide hover:bg-[#680018]"
+              disabled={orderLoading}
+              className="w-full text-white py-3 md:py-4 font-medium rounded-md transition-colors tracking-wide hover:bg-[#680018] disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#2D020C' }}
             >
-              Оформить заказ
+              {orderLoading ? 'Оформление...' : 'Оформить заказ'}
             </button>
           </div>
         </div>

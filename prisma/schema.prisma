@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -33,7 +33,7 @@ model Order {
   address       String
   paymentMethod String   @default("payme")
   total         Float
-  status        String   @default("pending")
+  status        String   @default("оформлен")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   items         OrderItem[]
