@@ -19,6 +19,21 @@ function buildApiUrl(endpoint: string, extra?: Record<string, string>): string {
   return url.toString();
 }
 
+/* ──── Safe JSON fetch helper ──── */
+async function safeFetchJson(url: string, label: string): Promise<unknown | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.warn(`[SARPO API] GET ${label} → ${res.status}`);
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn(`[SARPO API] GET ${label} failed:`, err);
+    return null;
+  }
+}
+
 /* ──── Products (with filters) ──── */
 export function useProducts(params?: {
   search?: string;
@@ -55,29 +70,18 @@ export function useProducts(params?: {
 
     let cancelled = false;
 
-    fetch(url)
-      .then((res) => {
-        if (!res.ok) {
-          // API error (422, 500, etc.) — keep fallback data, don't crash
-          console.warn(`[SARPO API] GET ${endpoint} → ${res.status}`, res.statusText);
-          return null;
+    safeFetchJson(url, 'products').then((json) => {
+      if (!cancelled && json && typeof json === 'object') {
+        const obj = json as Record<string, unknown>;
+        const products = (obj.products || obj.data || []) as Product[];
+        if (Array.isArray(products) && products.length > 0) {
+          setData(products);
+          setTotal((obj.total as number) ?? products.length);
         }
-        return res.json();
-      })
-      .then((json) => {
-        if (!cancelled && json) {
-          const products = json.products || json.data || [];
-          if (products.length > 0) {
-            setData(products);
-            setTotal(json.total ?? products.length);
-          }
-          // If API returns empty — keep fallback data
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      }
+    }).catch(() => {}).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
 
     return () => { cancelled = true; };
   }, [
@@ -100,24 +104,16 @@ export function useHeroSlides() {
 
     let cancelled = false;
 
-    fetch(buildApiUrl('hero-slides'))
-      .then((res) => {
-        if (!res.ok) {
-          console.warn(`[SARPO API] GET hero-slides → ${res.status}`);
-          return null;
+    safeFetchJson(buildApiUrl('hero-slides'), 'hero-slides').then((json) => {
+      if (!cancelled && json) {
+        const raw = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.slides || []);
+        if (Array.isArray(raw) && raw.length > 0) {
+          setData(raw as HeroSlide[]);
         }
-        return res.json();
-      })
-      .then((json) => {
-        if (!cancelled && json) {
-          const slides = Array.isArray(json) ? json : (json.data || json.slides || []);
-          if (slides.length > 0) setData(slides);
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      }
+    }).catch(() => {}).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
 
     return () => { cancelled = true; };
   }, []);
@@ -137,29 +133,19 @@ export function useCollections() {
 
     let cancelled = false;
 
-    fetch(buildApiUrl('collections'))
-      .then((res) => {
-        if (!res.ok) {
-          console.warn(`[SARPO API] GET collections → ${res.status}`);
-          return null;
+    safeFetchJson(buildApiUrl('collections'), 'collections').then((json) => {
+      if (!cancelled && json) {
+        const raw = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.collections || []);
+        if (Array.isArray(raw) && raw.length > 0) {
+          const names = raw.map((c: Collection | string) =>
+            typeof c === 'string' ? c : (c.name || c.slug || '')
+          ).filter(Boolean);
+          if (names.length > 0) setData(names);
         }
-        return res.json();
-      })
-      .then((json) => {
-        if (!cancelled && json) {
-          const raw = Array.isArray(json) ? json : (json.data || json.collections || []);
-          if (raw.length > 0) {
-            const names = raw.map((c: Collection | string) =>
-              typeof c === 'string' ? c : (c.name || c.slug || '')
-            ).filter(Boolean);
-            setData(names);
-          }
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      }
+    }).catch(() => {}).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
 
     return () => { cancelled = true; };
   }, []);
@@ -184,24 +170,16 @@ export function useRecommendedProducts() {
 
     let cancelled = false;
 
-    fetch(buildApiUrl('products/recommended'))
-      .then((res) => {
-        if (!res.ok) {
-          console.warn(`[SARPO API] GET products/recommended → ${res.status}`);
-          return null;
+    safeFetchJson(buildApiUrl('products/recommended'), 'products/recommended').then((json) => {
+      if (!cancelled && json) {
+        const raw = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.products || []);
+        if (Array.isArray(raw) && raw.length > 0) {
+          setData(raw as Product[]);
         }
-        return res.json();
-      })
-      .then((json) => {
-        if (!cancelled && json) {
-          const products = Array.isArray(json) ? json : (json.data || json.products || []);
-          if (products.length > 0) setData(products);
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      }
+    }).catch(() => {}).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
 
     return () => { cancelled = true; };
   }, []);
@@ -221,24 +199,16 @@ export function useNewProducts() {
 
     let cancelled = false;
 
-    fetch(buildApiUrl('products/new'))
-      .then((res) => {
-        if (!res.ok) {
-          console.warn(`[SARPO API] GET products/new → ${res.status}`);
-          return null;
+    safeFetchJson(buildApiUrl('products/new'), 'products/new').then((json) => {
+      if (!cancelled && json) {
+        const raw = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.products || []);
+        if (Array.isArray(raw) && raw.length > 0) {
+          setData(raw as Product[]);
         }
-        return res.json();
-      })
-      .then((json) => {
-        if (!cancelled && json) {
-          const products = Array.isArray(json) ? json : (json.data || json.products || []);
-          if (products.length > 0) setData(products);
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      }
+    }).catch(() => {}).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
 
     return () => { cancelled = true; };
   }, []);
