@@ -21,7 +21,8 @@ import {
   ArrowUpDown,
   ChevronUp,
 } from 'lucide-react';
-import { products, heroSlides, collections, productGallery, Product } from '@/lib/sarpo-data';
+import { Product } from '@/lib/sarpo-data';
+import { useProducts, useHeroSlides, useCollections, useProductGallery, useRecommendedProducts, useNewProducts } from '@/lib/use-api-data';
 import { useCartStore } from '@/lib/cart-store';
 import { toast } from 'sonner';
 
@@ -321,8 +322,9 @@ function HomePage({
   onSelectProduct: (product: Product) => void;
   onCollectionNavigate: (collection: string) => void;
 }) {
-  const recommendedProducts = products.slice(0, 10);
-  const newProducts = products.filter((p) => p.isNew === true);
+  const { data: recommendedProducts, loading: loadingRecommended } = useRecommendedProducts();
+  const { data: newProducts, loading: loadingNew } = useNewProducts();
+  const { data: heroSlides, loading: loadingSlides } = useHeroSlides();
   const [slideIndex, setSlideIndex] = useState(0);
 
   useEffect(() => {
@@ -336,9 +338,27 @@ function HomePage({
   const next = () => setSlideIndex((i) => (i + 1) % heroSlides.length);
   const prev = () => setSlideIndex((i) => (i - 1 + heroSlides.length) % heroSlides.length);
 
+  if (loadingSlides || loadingRecommended || loadingNew) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-4 border-[#680018] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (heroSlides.length === 0 && recommendedProducts.length === 0 && newProducts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-[#706567]">
+        <p className="text-lg mb-2">Данные загружаются...</p>
+        <p className="text-sm">Скоро здесь появятся товары</p>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Hero Section */}
+      {heroSlides.length > 0 && (
       <section
         className="relative overflow-hidden"
         style={{ backgroundColor: '#EFE6E1', minHeight: '280px' }}
@@ -416,6 +436,7 @@ function HomePage({
           </button>
         </div>
       </section>
+      )}
 
       {/* Recommended Products Section */}
       <section className="py-10 md:py-20 px-4 md:px-12 max-w-[1400px] mx-auto">
@@ -436,38 +457,44 @@ function HomePage({
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
-          {recommendedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} onSelect={onSelectProduct} />
-          ))}
-        </div>
+        {recommendedProducts.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+            {recommendedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} onSelect={onSelectProduct} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-[#706567] text-sm">Рекомендуемые товары скоро появятся</p>
+        )}
       </section>
 
       {/* Новинки Section */}
-      <section className="py-10 md:py-20 px-4 md:px-12 max-w-[1400px] mx-auto">
-        <div className="flex justify-between items-end mb-6 md:mb-10">
-          <div>
-            <h2 className="text-xl md:text-4xl font-medium text-[#1A1314] mb-1 md:mb-2">
-              Новинки
-            </h2>
-            <p className="text-[#706567] text-[11px] md:text-sm">
-              Свежие поступления этого сезона
-            </p>
+      {newProducts.length > 0 && (
+        <section className="py-10 md:py-20 px-4 md:px-12 max-w-[1400px] mx-auto">
+          <div className="flex justify-between items-end mb-6 md:mb-10">
+            <div>
+              <h2 className="text-xl md:text-4xl font-medium text-[#1A1314] mb-1 md:mb-2">
+                Новинки
+              </h2>
+              <p className="text-[#706567] text-[11px] md:text-sm">
+                Свежие поступления этого сезона
+              </p>
+            </div>
+            <button
+              onClick={() => onCollectionNavigate('Новинки')}
+              className="text-[11px] md:text-sm font-medium flex items-center gap-1 text-[#680018] hover:text-[#2D020C] transition-colors"
+            >
+              Все <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
+            </button>
           </div>
-          <button
-            onClick={() => onCollectionNavigate('Новинки')}
-            className="text-[11px] md:text-sm font-medium flex items-center gap-1 text-[#680018] hover:text-[#2D020C] transition-colors"
-          >
-            Все <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
-          </button>
-        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
-          {newProducts.map((product) => (
-            <ProductCard key={product.id} product={product} onSelect={onSelectProduct} />
-          ))}
-        </div>
-      </section>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+            {newProducts.map((product) => (
+              <ProductCard key={product.id} product={product} onSelect={onSelectProduct} />
+            ))}
+          </div>
+        </section>
+      )}
     </>
   );
 }
@@ -482,6 +509,8 @@ function CatalogPage({
   initialSearch?: string;
   initialCollection?: string;
 }) {
+  const { data: products, loading: loadingProducts } = useProducts();
+  const { data: collections, loading: loadingCollections } = useCollections();
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedCollections, setSelectedCollections] = useState<string[]>(initialCollection ? [initialCollection] : []);
   const [sortOpen, setSortOpen] = useState(false);
@@ -497,6 +526,16 @@ function CatalogPage({
       prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
     );
   };
+
+  if (loadingProducts || loadingCollections) {
+    return (
+      <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8 md:py-10">
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-[#680018] border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   const filteredProducts = products
     .filter((p) => {
@@ -702,6 +741,8 @@ function ProductPage({
   onNavigate: (page: PageView) => void;
   onSelectProduct: (product: Product) => void;
 }) {
+  const { data: products } = useProducts();
+  const { data: productGallery } = useProductGallery();
   const [quantity, setQuantity] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
   const addToCart = useCartStore((s) => s.addItem);
@@ -963,10 +1004,12 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
 
     setOrderLoading(true);
     try {
-      const res = await fetch('/api/orders', {
+      const res = await fetch('https://staging.lume.uz/api/commerce/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          vendor_id: '9e830a58-8fc7-41c9-a470-3b9cc2446069',
+          sale_point_id: '9e979274-baf3-457d-b5f8-3d25042ebaf4',
           customerName: customerName.trim(),
           phone: phone.trim(),
           address: address.trim(),
@@ -983,7 +1026,8 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Ошибка при создании заказа');
+        const msg = data?.error?.message || data?.message || data?.error || 'Ошибка при создании заказа';
+        throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
       }
 
       toast.success('Заказ оформлен!', {
