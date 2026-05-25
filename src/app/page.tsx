@@ -1009,8 +1009,8 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
         <div className="flex-1 bg-white p-4 md:p-6 shadow-sm rounded-md border border-gray-100">
 
           {/* Table header — clickable columns */}
-          <div className="hidden md:grid grid-cols-14 text-xs md:text-sm font-medium text-[#1A1314] border-b border-gray-200 pb-3 md:pb-4 mb-3 md:mb-4">
-            <div className="col-span-2">Фото</div>
+          <div className="hidden md:grid grid-cols-12 text-xs md:text-sm font-medium text-[#1A1314] border-b border-gray-200 pb-3 md:pb-4 mb-3 md:mb-4">
+            <div className="col-span-1">Фото</div>
             <button
               onClick={() => handleColumnSort('name')}
               className="col-span-3 flex items-center hover:text-[#680018] transition-colors select-none text-left"
@@ -1027,13 +1027,13 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
             </button>
             <button
               onClick={() => handleColumnSort('total')}
-              className="col-span-3 flex items-center justify-end hover:text-[#680018] transition-colors select-none"
+              className="col-span-2 flex items-center justify-end hover:text-[#680018] transition-colors select-none"
             >
               Общая сумма
               <SortIcon column="total" />
             </button>
-            <div className="col-span-2 text-center">Статус</div>
-            <div className="col-span-2 flex justify-end">Действие</div>
+            <div className="col-span-2 flex items-center justify-center">Статус</div>
+            <div className="col-span-2 flex items-center justify-center">Действие</div>
           </div>
 
           {/* Mobile: sort buttons row */}
@@ -1076,10 +1076,10 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
             {sortedItems.map((item) => (
               <div
                 key={item.product.id}
-                className="grid grid-cols-12 md:grid-cols-14 items-center text-xs md:text-sm gap-2"
+                className="grid grid-cols-12 items-center text-xs md:text-sm gap-2"
               >
                 {/* Photo */}
-                <div className="col-span-3 md:col-span-2">
+                <div className="col-span-2 md:col-span-1 flex items-center justify-center">
                   <img
                     src={item.product.image}
                     alt={item.product.name}
@@ -1117,14 +1117,14 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                   </div>
                 </div>
                 {/* Total */}
-                <div className="hidden md:flex col-span-3 justify-end items-center">
+                <div className="col-span-3 md:col-span-2 flex justify-end items-center">
                   <span className="text-sm md:text-lg font-medium text-[#1A1314]">
                     {(item.product.price * item.quantity).toFixed(0)} $
                   </span>
                 </div>
                 {/* Status */}
-                <div className="col-span-2 md:col-span-2 flex justify-center items-center">
-                  <span className={`text-xs font-medium px-2 py-1 rounded-md ${
+                <div className="hidden md:flex col-span-2 items-center justify-center">
+                  <span className={`text-sm font-medium px-3 py-1 rounded-md whitespace-nowrap ${
                     orderPlaced
                       ? 'bg-green-100 text-green-700'
                       : 'bg-gray-100 text-[#706567]'
@@ -1133,16 +1133,13 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                   </span>
                 </div>
                 {/* Delete */}
-                <div className="col-span-3 md:col-span-2 flex justify-end items-center gap-2 md:gap-4">
-                  <span className="md:hidden text-sm font-medium text-[#1A1314]">
-                    {(item.product.price * item.quantity).toFixed(0)} $
-                  </span>
+                <div className="hidden md:flex col-span-2 items-center justify-center">
                   <button
                     onClick={() => removeItem(item.product.id)}
                     className="text-[#680018] hover:text-[#2D020C] transition-colors"
                     aria-label="Удалить"
                   >
-                    <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
+                    <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
               </div>
