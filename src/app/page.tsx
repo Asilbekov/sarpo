@@ -1006,9 +1006,11 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
     setOrderLoading(true);
     try {
       const res = await apiPostDirect('orders', {
-        customerName: customerName.trim(),
-        phone: phone.trim(),
-        address: address.trim(),
+        customer: {
+          name: customerName.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+        },
         paymentMethod,
         items: items.map((item) => ({
           productId: item.product.id,
@@ -1017,6 +1019,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
           quantity: item.quantity,
           image: item.product.image,
         })),
+        totalPrice: total,
       });
 
       if (!res.ok) {

@@ -40,7 +40,7 @@ export function useProducts(params?: {
     const extra: Record<string, string> = {};
     if (params?.search) extra.search = params.search;
     if (params?.collection) extra.collection = params.collection;
-    if (params?.isNew) extra.isNew = 'true';
+    if (params?.isNew) extra.isNew = '1';
     if (params?.category) extra.category = params.category;
     if (params?.priceMin !== undefined) extra.priceMin = String(params.priceMin);
     if (params?.priceMax !== undefined) extra.priceMax = String(params.priceMax);
