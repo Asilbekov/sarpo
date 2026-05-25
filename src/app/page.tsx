@@ -886,6 +886,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [orderLoading, setOrderLoading] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   // Cycle sort: null → desc → asc → null
   const handleColumnSort = (column: CartSortColumn) => {
@@ -982,6 +983,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
       toast.success('Заказ оформлен!', {
         description: `Статус: оформлен | Сумма: ${total.toFixed(0)} $`,
       });
+      setOrderPlaced(true);
       setCustomerName('');
       setPhone('');
       setAddress('');
@@ -999,7 +1001,15 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
         <h1 className="text-3xl md:text-4xl font-medium text-[#1A1314] mb-2">
           Корзина оформление заказа
         </h1>
-        <p className="text-[#680018] text-xs md:text-sm">Оформление заказа</p>
+        <div className="flex items-center gap-3">
+          <p className="text-[#680018] text-xs md:text-sm">Оформление заказа</p>
+          {orderPlaced && (
+            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              Статус: оформлен
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
@@ -1278,14 +1288,20 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
               Связаться с оператором
             </button>
 
-            <button
-              onClick={handleOrder}
-              disabled={orderLoading}
-              className="w-full text-white py-3 md:py-4 font-medium rounded-md transition-colors tracking-wide hover:bg-[#680018] disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#2D020C' }}
-            >
-              {orderLoading ? 'Оформление...' : 'Оформить заказ'}
-            </button>
+            {orderPlaced ? (
+              <div className="w-full text-center py-3 md:py-4 font-medium rounded-md bg-green-50 text-green-700 border border-green-200">
+                ✓ Заказ оформлен
+              </div>
+            ) : (
+              <button
+                onClick={handleOrder}
+                disabled={orderLoading}
+                className="w-full text-white py-3 md:py-4 font-medium rounded-md transition-colors tracking-wide hover:bg-[#680018] disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: '#2D020C' }}
+              >
+                {orderLoading ? 'Оформление...' : 'Оформить заказ'}
+              </button>
+            )}
           </div>
         </div>
       </div>
