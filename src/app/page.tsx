@@ -879,7 +879,6 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
   const items = useCartStore((s) => s.items);
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
-  const clearCart = useCartStore((s) => s.clearCart);
   const total = useCartStore((s) => s.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0));
   const [paymentMethod, setPaymentMethod] = useState('payme');
   const [cartSort, setCartSort] = useState<CartSortState>({ column: null, direction: 'asc' });
@@ -983,7 +982,6 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
       toast.success('Заказ оформлен!', {
         description: `Статус: оформлен | Сумма: ${total.toFixed(0)} $`,
       });
-      clearCart();
       setCustomerName('');
       setPhone('');
       setAddress('');
