@@ -1005,7 +1005,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
 
     setOrderLoading(true);
     try {
-      const res = await fetch('https://staging.lume.uz/api/commerce/orders', {
+      const res = await fetch('/api/commerce/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

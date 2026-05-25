@@ -3,22 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Product, HeroSlide, Collection } from '@/lib/sarpo-data';
 
-const API_BASE = 'https://staging.lume.uz/api/commerce';
-const VENDOR_ID = '9e830a58-8fc7-41c9-a470-3b9cc2446069';
-const SALE_POINT_ID = '9e979274-baf3-457d-b5f8-3d25042ebaf4';
-
-function buildUrl(endpoint: string, extra?: Record<string, string>): string {
-  const url = new URL(`${API_BASE}/${endpoint}`);
-  url.searchParams.set('vendor_id', VENDOR_ID);
-  url.searchParams.set('sale_point_id', SALE_POINT_ID);
-  if (extra) {
-    Object.entries(extra).forEach(([k, v]) => {
-      if (v !== undefined && v !== '') url.searchParams.set(k, v);
-    });
-  }
-  return url.toString();
-}
-
 /* ──── Products (with filters) ──── */
 export function useProducts(params?: {
   search?: string;
@@ -37,18 +21,19 @@ export function useProducts(params?: {
   const prevKeyRef = useRef('');
 
   useEffect(() => {
-    const extra: Record<string, string> = {};
-    if (params?.search) extra.search = params.search;
-    if (params?.collection) extra.collection = params.collection;
-    if (params?.isNew) extra.isNew = 'true';
-    if (params?.category) extra.category = params.category;
-    if (params?.priceMin !== undefined) extra.priceMin = String(params.priceMin);
-    if (params?.priceMax !== undefined) extra.priceMax = String(params.priceMax);
-    if (params?.sort) extra.sort = params.sort;
-    if (params?.page) extra.page = String(params.page);
-    if (params?.limit) extra.limit = String(params.limit);
+    const qp = new URLSearchParams();
+    if (params?.search) qp.set('search', params.search);
+    if (params?.collection) qp.set('collection', params.collection);
+    if (params?.isNew) qp.set('isNew', 'true');
+    if (params?.category) qp.set('category', params.category);
+    if (params?.priceMin !== undefined) qp.set('priceMin', String(params.priceMin));
+    if (params?.priceMax !== undefined) qp.set('priceMax', String(params.priceMax));
+    if (params?.sort) qp.set('sort', params.sort);
+    if (params?.page) qp.set('page', String(params.page));
+    if (params?.limit) qp.set('limit', String(params.limit));
 
-    const url = buildUrl('products', extra);
+    const qs = qp.toString();
+    const url = `/api/commerce/products${qs ? `?${qs}` : ''}`;
     const key = url;
     if (prevKeyRef.current === key) return;
     prevKeyRef.current = key;
@@ -90,7 +75,7 @@ export function useHeroSlides() {
 
     let cancelled = false;
 
-    fetch(buildUrl('hero-slides'))
+    fetch('/api/commerce/hero-slides')
       .then((res) => res.json())
       .then((json) => {
         if (!cancelled) {
@@ -121,7 +106,7 @@ export function useCollections() {
 
     let cancelled = false;
 
-    fetch(buildUrl('collections'))
+    fetch('/api/commerce/collections')
       .then((res) => res.json())
       .then((json) => {
         if (!cancelled) {
@@ -160,7 +145,7 @@ export function useRecommendedProducts() {
 
     let cancelled = false;
 
-    fetch(buildUrl('products/recommended'))
+    fetch('/api/commerce/products/recommended')
       .then((res) => res.json())
       .then((json) => {
         if (!cancelled) {
@@ -191,7 +176,7 @@ export function useNewProducts() {
 
     let cancelled = false;
 
-    fetch(buildUrl('products/new'))
+    fetch('/api/commerce/products/new')
       .then((res) => res.json())
       .then((json) => {
         if (!cancelled) {
