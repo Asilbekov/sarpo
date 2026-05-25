@@ -22,7 +22,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { Product } from '@/lib/sarpo-data';
-import { useProducts, useHeroSlides, useCollections, useProductGallery, useRecommendedProducts, useNewProducts } from '@/lib/use-api-data';
+import { useProducts, useHeroSlides, useCollections, useProductGallery, useRecommendedProducts, useNewProducts, apiPostDirect } from '@/lib/use-api-data';
 import { useCartStore } from '@/lib/cart-store';
 import { toast } from 'sonner';
 
@@ -1005,24 +1005,18 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
 
     setOrderLoading(true);
     try {
-      const res = await fetch('/api/commerce/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          vendor_id: '9e830a58-8fc7-41c9-a470-3b9cc2446069',
-          sale_point_id: '9e979274-baf3-457d-b5f8-3d25042ebaf4',
-          customerName: customerName.trim(),
-          phone: phone.trim(),
-          address: address.trim(),
-          paymentMethod,
-          items: items.map((item) => ({
-            productId: item.product.id,
-            name: item.product.name,
-            price: item.product.price,
-            quantity: item.quantity,
-            image: item.product.image,
-          })),
-        }),
+      const res = await apiPostDirect('orders', {
+        customerName: customerName.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+        paymentMethod,
+        items: items.map((item) => ({
+          productId: item.product.id,
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          image: item.product.image,
+        })),
       });
 
       if (!res.ok) {
