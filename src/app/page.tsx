@@ -1001,15 +1001,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
         <h1 className="text-3xl md:text-4xl font-medium text-[#1A1314] mb-2">
           Корзина оформление заказа
         </h1>
-        <div className="flex items-center gap-3">
-          <p className="text-[#680018] text-xs md:text-sm">Оформление заказа</p>
-          {orderPlaced && (
-            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              Статус: оформлен
-            </span>
-          )}
-        </div>
+        <p className="text-[#680018] text-xs md:text-sm">Оформление заказа</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
@@ -1017,18 +1009,18 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
         <div className="flex-1 bg-white p-4 md:p-6 shadow-sm rounded-md border border-gray-100">
 
           {/* Table header — clickable columns */}
-          <div className="hidden md:grid grid-cols-12 text-xs md:text-sm font-medium text-[#1A1314] border-b border-gray-200 pb-3 md:pb-4 mb-3 md:mb-4">
+          <div className="hidden md:grid grid-cols-14 text-xs md:text-sm font-medium text-[#1A1314] border-b border-gray-200 pb-3 md:pb-4 mb-3 md:mb-4">
             <div className="col-span-2">Фото</div>
             <button
               onClick={() => handleColumnSort('name')}
-              className="col-span-4 flex items-center hover:text-[#680018] transition-colors select-none text-left"
+              className="col-span-3 flex items-center hover:text-[#680018] transition-colors select-none text-left"
             >
               Наименование продукта
               <SortIcon column="name" />
             </button>
             <button
               onClick={() => handleColumnSort('quantity')}
-              className="col-span-3 flex items-center justify-center hover:text-[#680018] transition-colors select-none"
+              className="col-span-2 flex items-center justify-center hover:text-[#680018] transition-colors select-none"
             >
               Количество
               <SortIcon column="quantity" />
@@ -1040,6 +1032,8 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
               Общая сумма
               <SortIcon column="total" />
             </button>
+            <div className="col-span-2 text-center">Статус</div>
+            <div className="col-span-2 flex justify-end">Действие</div>
           </div>
 
           {/* Mobile: sort buttons row */}
@@ -1082,7 +1076,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
             {sortedItems.map((item) => (
               <div
                 key={item.product.id}
-                className="grid grid-cols-12 items-center text-xs md:text-sm gap-2"
+                className="grid grid-cols-12 md:grid-cols-14 items-center text-xs md:text-sm gap-2"
               >
                 {/* Photo */}
                 <div className="col-span-3 md:col-span-2">
@@ -1094,11 +1088,11 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                   />
                 </div>
                 {/* Name */}
-                <div className="col-span-4 md:col-span-4 text-sm md:text-base font-medium text-[#1A1314]">
+                <div className="col-span-4 md:col-span-3 text-sm md:text-base font-medium text-[#1A1314]">
                   {item.product.name}
                 </div>
                 {/* Quantity */}
-                <div className="col-span-3 flex justify-center items-center">
+                <div className="col-span-3 md:col-span-2 flex justify-center items-center">
                   <div className="flex items-center">
                     <button
                       onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
@@ -1122,9 +1116,25 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                     </button>
                   </div>
                 </div>
-                {/* Total + Delete */}
-                <div className="col-span-2 flex justify-end items-center gap-2 md:gap-6">
+                {/* Total */}
+                <div className="hidden md:flex col-span-3 justify-end items-center">
                   <span className="text-sm md:text-lg font-medium text-[#1A1314]">
+                    {(item.product.price * item.quantity).toFixed(0)} $
+                  </span>
+                </div>
+                {/* Status */}
+                <div className="col-span-2 md:col-span-2 flex justify-center items-center">
+                  <span className={`text-xs font-medium px-2 py-1 rounded-md ${
+                    orderPlaced
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-[#706567]'
+                  }`}>
+                    {orderPlaced ? 'оформлен' : 'в корзине'}
+                  </span>
+                </div>
+                {/* Delete */}
+                <div className="col-span-3 md:col-span-2 flex justify-end items-center gap-2 md:gap-4">
+                  <span className="md:hidden text-sm font-medium text-[#1A1314]">
                     {(item.product.price * item.quantity).toFixed(0)} $
                   </span>
                   <button
@@ -1288,20 +1298,14 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
               Связаться с оператором
             </button>
 
-            {orderPlaced ? (
-              <div className="w-full text-center py-3 md:py-4 font-medium rounded-md bg-green-50 text-green-700 border border-green-200">
-                ✓ Заказ оформлен
-              </div>
-            ) : (
-              <button
-                onClick={handleOrder}
-                disabled={orderLoading}
-                className="w-full text-white py-3 md:py-4 font-medium rounded-md transition-colors tracking-wide hover:bg-[#680018] disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: '#2D020C' }}
-              >
-                {orderLoading ? 'Оформление...' : 'Оформить заказ'}
-              </button>
-            )}
+            <button
+              onClick={handleOrder}
+              disabled={orderLoading || orderPlaced}
+              className="w-full text-white py-3 md:py-4 font-medium rounded-md transition-colors tracking-wide hover:bg-[#680018] disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#2D020C' }}
+            >
+              {orderLoading ? 'Оформление...' : orderPlaced ? 'Заказ оформлен' : 'Оформить заказ'}
+            </button>
           </div>
         </div>
       </div>
