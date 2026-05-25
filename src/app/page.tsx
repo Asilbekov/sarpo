@@ -1147,7 +1147,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                 <div className="hidden md:flex col-span-3 items-center justify-center">
                   <span className={`text-sm font-medium px-3 py-1 rounded-md whitespace-nowrap ${
                     orderPlaced
-                      ? 'bg-green-100 text-green-700'
+                      ? 'bg-[#680018] text-white'
                       : 'bg-gray-100 text-[#706567]'
                   }`}>
                     {orderPlaced ? 'оформлен' : 'в корзине'}
