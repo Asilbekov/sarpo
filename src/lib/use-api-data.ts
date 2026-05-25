@@ -56,9 +56,16 @@ export function useProducts(params?: {
     let cancelled = false;
 
     fetch(url)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          // API error (422, 500, etc.) — keep fallback data, don't crash
+          console.warn(`[SARPO API] GET ${endpoint} → ${res.status}`, res.statusText);
+          return null;
+        }
+        return res.json();
+      })
       .then((json) => {
-        if (!cancelled) {
+        if (!cancelled && json) {
           const products = json.products || json.data || [];
           if (products.length > 0) {
             setData(products);
@@ -94,9 +101,15 @@ export function useHeroSlides() {
     let cancelled = false;
 
     fetch(buildApiUrl('hero-slides'))
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          console.warn(`[SARPO API] GET hero-slides → ${res.status}`);
+          return null;
+        }
+        return res.json();
+      })
       .then((json) => {
-        if (!cancelled) {
+        if (!cancelled && json) {
           const slides = Array.isArray(json) ? json : (json.data || json.slides || []);
           if (slides.length > 0) setData(slides);
         }
@@ -125,9 +138,15 @@ export function useCollections() {
     let cancelled = false;
 
     fetch(buildApiUrl('collections'))
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          console.warn(`[SARPO API] GET collections → ${res.status}`);
+          return null;
+        }
+        return res.json();
+      })
       .then((json) => {
-        if (!cancelled) {
+        if (!cancelled && json) {
           const raw = Array.isArray(json) ? json : (json.data || json.collections || []);
           if (raw.length > 0) {
             const names = raw.map((c: Collection | string) =>
@@ -166,9 +185,15 @@ export function useRecommendedProducts() {
     let cancelled = false;
 
     fetch(buildApiUrl('products/recommended'))
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          console.warn(`[SARPO API] GET products/recommended → ${res.status}`);
+          return null;
+        }
+        return res.json();
+      })
       .then((json) => {
-        if (!cancelled) {
+        if (!cancelled && json) {
           const products = Array.isArray(json) ? json : (json.data || json.products || []);
           if (products.length > 0) setData(products);
         }
@@ -197,9 +222,15 @@ export function useNewProducts() {
     let cancelled = false;
 
     fetch(buildApiUrl('products/new'))
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          console.warn(`[SARPO API] GET products/new → ${res.status}`);
+          return null;
+        }
+        return res.json();
+      })
       .then((json) => {
-        if (!cancelled) {
+        if (!cancelled && json) {
           const products = Array.isArray(json) ? json : (json.data || json.products || []);
           if (products.length > 0) setData(products);
         }
