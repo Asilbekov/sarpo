@@ -80,10 +80,23 @@ export function useProducts(params?: {
     safeFetchJson(url, 'products').then((json) => {
       if (!cancelled && json && typeof json === 'object') {
         const obj = json as Record<string, unknown>;
-        const products = (obj.products || obj.data || []) as Product[];
-        if (Array.isArray(products) && products.length > 0) {
-          setData(products);
-          setTotal((obj.total as number) ?? products.length);
+        const productsRaw = (obj.products || obj.data || []) as Record<string, unknown>[];
+        if (Array.isArray(productsRaw) && productsRaw.length > 0) {
+          const mapped: Product[] = productsRaw.map((item) => ({
+            id: String(item.id || ''),
+            name: String(item.name || ''),
+            price: Number(item.price) || 0,
+            image: String(item.image || item.main_image || ''),
+            images: Array.isArray(item.images) ? item.images as string[] : undefined,
+            category: String(item.category || ''),
+            collection: String(item.collection || ''),
+            isNew: Boolean(item.isNew || item.is_new),
+            description: item.description ? String(item.description) : undefined,
+          })).filter((p) => p.id && p.name);
+          if (mapped.length > 0) {
+            setData(mapped);
+            setTotal((obj.total as number) ?? mapped.length);
+          }
         }
       }
     }).catch(() => {}).finally(() => {
@@ -115,7 +128,12 @@ export function useHeroSlides() {
       if (!cancelled && json) {
         const raw = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.slides || []);
         if (Array.isArray(raw) && raw.length > 0) {
-          setData(raw as HeroSlide[]);
+          const mapped: HeroSlide[] = raw.map((item: Record<string, unknown>) => ({
+            image: (item.image as string) || '',
+            title: (item.title as string) || '',
+            subtitle: (item.subtitle as string) || '',
+          })).filter((s) => s.image); // only slides with images
+          if (mapped.length > 0) setData(mapped);
         }
       }
     }).catch(() => {}).finally(() => {
@@ -181,7 +199,18 @@ export function useRecommendedProducts() {
       if (!cancelled && json) {
         const raw = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.products || []);
         if (Array.isArray(raw) && raw.length > 0) {
-          setData(raw as Product[]);
+          const mapped: Product[] = raw.map((item: Record<string, unknown>) => ({
+            id: String(item.id || ''),
+            name: String(item.name || ''),
+            price: Number(item.price) || 0,
+            image: String(item.image || item.main_image || ''),
+            images: Array.isArray(item.images) ? item.images as string[] : undefined,
+            category: String(item.category || ''),
+            collection: String(item.collection || ''),
+            isNew: Boolean(item.isNew || item.is_new),
+            description: item.description ? String(item.description) : undefined,
+          })).filter((p) => p.id && p.name);
+          if (mapped.length > 0) setData(mapped);
         }
       }
     }).catch(() => {}).finally(() => {
@@ -210,7 +239,18 @@ export function useNewProducts() {
       if (!cancelled && json) {
         const raw = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.products || []);
         if (Array.isArray(raw) && raw.length > 0) {
-          setData(raw as Product[]);
+          const mapped: Product[] = raw.map((item: Record<string, unknown>) => ({
+            id: String(item.id || ''),
+            name: String(item.name || ''),
+            price: Number(item.price) || 0,
+            image: String(item.image || item.main_image || ''),
+            images: Array.isArray(item.images) ? item.images as string[] : undefined,
+            category: String(item.category || ''),
+            collection: String(item.collection || ''),
+            isNew: Boolean(item.isNew || item.is_new),
+            description: item.description ? String(item.description) : undefined,
+          })).filter((p) => p.id && p.name);
+          if (mapped.length > 0) setData(mapped);
         }
       }
     }).catch(() => {}).finally(() => {
