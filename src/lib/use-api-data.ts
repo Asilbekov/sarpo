@@ -41,6 +41,59 @@ async function safeFetchJson(url: string, label: string, extraHeaders?: Record<s
   }
 }
 
+/* ──── Map raw API product item to our Product type ──── */
+function mapProductItem(item: Record<string, unknown>): Product {
+  const images = Array.isArray(item.images) ? item.images as string[] : [];
+  const mainImage = item.image ? String(item.image) : (images[0] || '');
+  return {
+    id: String(item.id || ''),
+    name: String(item.name || ''),
+    price: Number(item.price) || 0,
+    image: mainImage,
+    images: images.length > 0 ? images : undefined,
+    category: String(item.category || ''),
+    collection: String(item.collection || ''),
+    isNew: Boolean(item.isNew || item.is_new),
+    description: item.description ? String(item.description) : undefined,
+  };
+}
+
+/** Fetch products from /products endpoint with optional params, returns mapped array */
+async function fetchProductsFromMain(extra?: Record<string, string>): Promise<Product[]> {
+  const json = await safeFetchJson(buildApiUrl('products', extra), 'products');
+  if (json && typeof json === 'object') {
+    const obj = json as Record<string, unknown>;
+    const productsRaw = (obj.products || obj.data || []) as Record<string, unknown>[];
+    if (Array.isArray(productsRaw) && productsRaw.length > 0) {
+      return productsRaw.map(mapProductItem).filter((p) => p.id && p.name);
+    }
+  }
+  return [];
+}
+
+/** Fetch products from a sub-endpoint, fall back to /products if empty */
+async function fetchProductsWithFallback(subEndpoint: string, fallbackExtra?: Record<string, string>): Promise<Product[]> {
+  // 1. Try the dedicated sub-endpoint first
+  const json = await safeFetchJson(buildApiUrl(subEndpoint), subEndpoint);
+  if (json) {
+    const raw = Array.isArray(json)
+      ? json
+      : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.products || []);
+    if (Array.isArray(raw) && raw.length > 0) {
+      const mapped = (raw as Record<string, unknown>[]).map(mapProductItem).filter((p) => p.id && p.name);
+      if (mapped.length > 0) return mapped;
+    }
+  }
+
+  // 2. Sub-endpoint returned empty — fall back to /products
+  console.log(`[SARPO API] ${subEndpoint} returned empty, falling back to /products`);
+  const products = await fetchProductsFromMain(fallbackExtra);
+  if (products.length > 0) return products;
+
+  // 3. Both failed — return empty (caller will use local fallback)
+  return [];
+}
+
 /* ──── Products (with filters) ──── */
 export function useProducts(params?: {
   search?: string;
@@ -77,31 +130,10 @@ export function useProducts(params?: {
 
     let cancelled = false;
 
-    safeFetchJson(url, 'products').then((json) => {
-      if (!cancelled && json && typeof json === 'object') {
-        const obj = json as Record<string, unknown>;
-        const productsRaw = (obj.products || obj.data || []) as Record<string, unknown>[];
-        if (Array.isArray(productsRaw) && productsRaw.length > 0) {
-          const mapped: Product[] = productsRaw.map((item) => {
-            const images = Array.isArray(item.images) ? item.images as string[] : [];
-            const mainImage = item.image ? String(item.image) : (images[0] || '');
-            return {
-              id: String(item.id || ''),
-              name: String(item.name || ''),
-              price: Number(item.price) || 0,
-              image: mainImage,
-              images: images.length > 0 ? images : undefined,
-              category: String(item.category || ''),
-              collection: String(item.collection || ''),
-              isNew: Boolean(item.isNew || item.is_new),
-              description: item.description ? String(item.description) : undefined,
-            };
-          }).filter((p) => p.id && p.name);
-          if (mapped.length > 0) {
-            setData(mapped);
-            setTotal((obj.total as number) ?? mapped.length);
-          }
-        }
+    fetchProductsFromMain(extra).then((mapped) => {
+      if (!cancelled && mapped.length > 0) {
+        setData(mapped);
+        // We don't have total from this call, but it's fine for catalog
       }
     }).catch(() => {}).finally(() => {
       if (!cancelled) setLoading(false);
@@ -199,27 +231,9 @@ export function useRecommendedProducts() {
 
     let cancelled = false;
 
-    safeFetchJson(buildApiUrl('products/recommended'), 'products/recommended').then((json) => {
-      if (!cancelled && json) {
-        const raw = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.products || []);
-        if (Array.isArray(raw) && raw.length > 0) {
-          const mapped: Product[] = raw.map((item: Record<string, unknown>) => {
-            const imgs = Array.isArray(item.images) ? item.images as string[] : [];
-            const mainImg = item.image ? String(item.image) : (imgs[0] || '');
-            return {
-              id: String(item.id || ''),
-              name: String(item.name || ''),
-              price: Number(item.price) || 0,
-              image: mainImg,
-              images: imgs.length > 0 ? imgs : undefined,
-              category: String(item.category || ''),
-              collection: String(item.collection || ''),
-              isNew: Boolean(item.isNew || item.is_new),
-              description: item.description ? String(item.description) : undefined,
-            };
-          }).filter((p) => p.id && p.name);
-          if (mapped.length > 0) setData(mapped);
-        }
+    fetchProductsWithFallback('products/recommended', { limit: '10' }).then((products) => {
+      if (!cancelled && products.length > 0) {
+        setData(products.slice(0, 10));
       }
     }).catch(() => {}).finally(() => {
       if (!cancelled) setLoading(false);
@@ -243,27 +257,9 @@ export function useNewProducts() {
 
     let cancelled = false;
 
-    safeFetchJson(buildApiUrl('products/new'), 'products/new').then((json) => {
-      if (!cancelled && json) {
-        const raw = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.products || []);
-        if (Array.isArray(raw) && raw.length > 0) {
-          const mapped: Product[] = raw.map((item: Record<string, unknown>) => {
-            const imgs = Array.isArray(item.images) ? item.images as string[] : [];
-            const mainImg = item.image ? String(item.image) : (imgs[0] || '');
-            return {
-              id: String(item.id || ''),
-              name: String(item.name || ''),
-              price: Number(item.price) || 0,
-              image: mainImg,
-              images: imgs.length > 0 ? imgs : undefined,
-              category: String(item.category || ''),
-              collection: String(item.collection || ''),
-              isNew: Boolean(item.isNew || item.is_new),
-              description: item.description ? String(item.description) : undefined,
-            };
-          }).filter((p) => p.id && p.name);
-          if (mapped.length > 0) setData(mapped);
-        }
+    fetchProductsWithFallback('products/new', { isNew: '1', limit: '20' }).then((products) => {
+      if (!cancelled && products.length > 0) {
+        setData(products.slice(0, 20));
       }
     }).catch(() => {}).finally(() => {
       if (!cancelled) setLoading(false);
