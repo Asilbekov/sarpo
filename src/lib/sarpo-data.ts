@@ -10,6 +10,11 @@ export interface Product {
   description?: string;
 }
 
+/** Format price in UZS (sums) with space separators */
+export function formatPrice(price: number): string {
+  return price.toLocaleString('ru-RU') + ' сум';
+}
+
 export interface HeroSlide {
   image: string;
   title: string;

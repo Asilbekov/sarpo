@@ -21,7 +21,7 @@ import {
   ArrowUpDown,
   ChevronUp,
 } from 'lucide-react';
-import { Product } from '@/lib/sarpo-data';
+import { Product, formatPrice } from '@/lib/sarpo-data';
 import { useProducts, useHeroSlides, useCollections, useProductGallery, useRecommendedProducts, useNewProducts, apiPostDirect } from '@/lib/use-api-data';
 import { useCartStore } from '@/lib/cart-store';
 import { toast } from 'sonner';
@@ -277,19 +277,27 @@ function ProductCard({
         className="relative aspect-[3/4] overflow-hidden rounded-sm group-hover:shadow-xl transition-all duration-300 border border-gray-100"
         style={{ backgroundColor: '#FFFFFF' }}
       >
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-        />
+        {product.image ? (
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+            <ShoppingBag className="w-12 h-12" />
+          </div>
+        )}
         {/* Category badge */}
+        {product.category && (
         <div
           className="absolute bottom-2 left-2 md:bottom-3 md:left-3 text-white text-[9px] md:text-[11px] px-1.5 py-0.5 md:px-2.5 md:py-1 tracking-wide"
           style={{ backgroundColor: '#680018' }}
         >
           {product.category}
         </div>
+        )}
         {/* "Новинка" sash */}
         {product.isNew && (
           <div
@@ -305,7 +313,7 @@ function ProductCard({
           {product.name}
         </h3>
         <p className="text-[11px] md:text-sm text-[#706567] mt-1">
-          ${product.price.toFixed(2)}
+          {formatPrice(product.price)}
         </p>
       </div>
     </button>
@@ -518,7 +526,7 @@ function CatalogPage({
   const [sortBy, setSortBy] = useState('newest');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const PRICE_MIN = 0;
-  const PRICE_MAX = 100;
+  const PRICE_MAX = 15000000;
   const [priceMin, setPriceMin] = useState(PRICE_MIN);
   const [priceMax, setPriceMax] = useState(PRICE_MAX);
 
@@ -632,8 +640,8 @@ function CatalogPage({
           />
         </div>
         <div className="flex justify-between text-[10px] md:text-xs text-[#706567]">
-          <span>{priceMin} $</span>
-          <span>{priceMax} $</span>
+          <span>{formatPrice(priceMin)}</span>
+          <span>{formatPrice(priceMax)}</span>
         </div>
       </div>
     </>
@@ -772,11 +780,17 @@ function ProductPage({
             className="aspect-[3/4] flex items-center justify-center overflow-hidden rounded-sm border border-gray-100"
             style={{ backgroundColor: '#FFFFFF' }}
           >
+            {gallery[activeImg] ? (
             <img
               src={gallery[activeImg]}
               alt={product.name}
               className="w-full h-full object-cover object-center"
             />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                <ShoppingBag className="w-20 h-20" />
+              </div>
+            )}
           </div>
 
           {/* Mobile: Circular thumbnails below main image */}
@@ -828,14 +842,16 @@ function ProductPage({
             ))}
           </div>
 
+          {product.category && (
           <p className="text-xs md:text-sm text-[#680018] mb-1.5 md:mb-2 tracking-wide">
             {product.category}
           </p>
+          )}
           <h1 className="text-2xl md:text-4xl font-medium text-[#1A1314] mb-3 md:mb-4">
             {product.name}
           </h1>
           <p className="text-xl md:text-2xl font-light text-[#1A1314] mb-4 md:mb-6">
-            ${product.price.toFixed(2)}
+            {formatPrice(product.price)}
           </p>
 
           {product.description && (
@@ -1030,7 +1046,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
       }
 
       toast.success('Заказ оформлен!', {
-        description: `Статус: оформлен | Сумма: ${total.toFixed(0)} $`,
+        description: `Статус: оформлен | Сумма: ${formatPrice(total)}`,
       });
       setOrderPlaced(true);
       setCustomerName('');
@@ -1183,7 +1199,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                 {/* Total */}
                 <div className="col-span-3 md:col-span-3 flex justify-center items-center">
                   <span className="text-sm md:text-lg font-medium text-[#1A1314]">
-                    {(item.product.price * item.quantity).toFixed(0)} $
+                    {formatPrice(item.product.price * item.quantity)}
                   </span>
                 </div>
                 {/* Status */}
@@ -1336,7 +1352,7 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
               <div className="flex justify-between items-center mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
                 <span className="text-sm text-[#706567]">Итого:</span>
                 <span className="text-lg md:text-xl font-medium text-[#1A1314]">
-                  {total.toFixed(0)} $
+                  {formatPrice(total)}
                 </span>
               </div>
             )}

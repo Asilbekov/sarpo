@@ -82,17 +82,21 @@ export function useProducts(params?: {
         const obj = json as Record<string, unknown>;
         const productsRaw = (obj.products || obj.data || []) as Record<string, unknown>[];
         if (Array.isArray(productsRaw) && productsRaw.length > 0) {
-          const mapped: Product[] = productsRaw.map((item) => ({
-            id: String(item.id || ''),
-            name: String(item.name || ''),
-            price: Number(item.price) || 0,
-            image: String(item.image || item.main_image || ''),
-            images: Array.isArray(item.images) ? item.images as string[] : undefined,
-            category: String(item.category || ''),
-            collection: String(item.collection || ''),
-            isNew: Boolean(item.isNew || item.is_new),
-            description: item.description ? String(item.description) : undefined,
-          })).filter((p) => p.id && p.name);
+          const mapped: Product[] = productsRaw.map((item) => {
+            const images = Array.isArray(item.images) ? item.images as string[] : [];
+            const mainImage = item.image ? String(item.image) : (images[0] || '');
+            return {
+              id: String(item.id || ''),
+              name: String(item.name || ''),
+              price: Number(item.price) || 0,
+              image: mainImage,
+              images: images.length > 0 ? images : undefined,
+              category: String(item.category || ''),
+              collection: String(item.collection || ''),
+              isNew: Boolean(item.isNew || item.is_new),
+              description: item.description ? String(item.description) : undefined,
+            };
+          }).filter((p) => p.id && p.name);
           if (mapped.length > 0) {
             setData(mapped);
             setTotal((obj.total as number) ?? mapped.length);
@@ -199,17 +203,21 @@ export function useRecommendedProducts() {
       if (!cancelled && json) {
         const raw = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.products || []);
         if (Array.isArray(raw) && raw.length > 0) {
-          const mapped: Product[] = raw.map((item: Record<string, unknown>) => ({
-            id: String(item.id || ''),
-            name: String(item.name || ''),
-            price: Number(item.price) || 0,
-            image: String(item.image || item.main_image || ''),
-            images: Array.isArray(item.images) ? item.images as string[] : undefined,
-            category: String(item.category || ''),
-            collection: String(item.collection || ''),
-            isNew: Boolean(item.isNew || item.is_new),
-            description: item.description ? String(item.description) : undefined,
-          })).filter((p) => p.id && p.name);
+          const mapped: Product[] = raw.map((item: Record<string, unknown>) => {
+            const imgs = Array.isArray(item.images) ? item.images as string[] : [];
+            const mainImg = item.image ? String(item.image) : (imgs[0] || '');
+            return {
+              id: String(item.id || ''),
+              name: String(item.name || ''),
+              price: Number(item.price) || 0,
+              image: mainImg,
+              images: imgs.length > 0 ? imgs : undefined,
+              category: String(item.category || ''),
+              collection: String(item.collection || ''),
+              isNew: Boolean(item.isNew || item.is_new),
+              description: item.description ? String(item.description) : undefined,
+            };
+          }).filter((p) => p.id && p.name);
           if (mapped.length > 0) setData(mapped);
         }
       }
@@ -239,17 +247,21 @@ export function useNewProducts() {
       if (!cancelled && json) {
         const raw = Array.isArray(json) ? json : ((json as Record<string, unknown>)?.data || (json as Record<string, unknown>)?.products || []);
         if (Array.isArray(raw) && raw.length > 0) {
-          const mapped: Product[] = raw.map((item: Record<string, unknown>) => ({
-            id: String(item.id || ''),
-            name: String(item.name || ''),
-            price: Number(item.price) || 0,
-            image: String(item.image || item.main_image || ''),
-            images: Array.isArray(item.images) ? item.images as string[] : undefined,
-            category: String(item.category || ''),
-            collection: String(item.collection || ''),
-            isNew: Boolean(item.isNew || item.is_new),
-            description: item.description ? String(item.description) : undefined,
-          })).filter((p) => p.id && p.name);
+          const mapped: Product[] = raw.map((item: Record<string, unknown>) => {
+            const imgs = Array.isArray(item.images) ? item.images as string[] : [];
+            const mainImg = item.image ? String(item.image) : (imgs[0] || '');
+            return {
+              id: String(item.id || ''),
+              name: String(item.name || ''),
+              price: Number(item.price) || 0,
+              image: mainImg,
+              images: imgs.length > 0 ? imgs : undefined,
+              category: String(item.category || ''),
+              collection: String(item.collection || ''),
+              isNew: Boolean(item.isNew || item.is_new),
+              description: item.description ? String(item.description) : undefined,
+            };
+          }).filter((p) => p.id && p.name);
           if (mapped.length > 0) setData(mapped);
         }
       }
