@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { Product, formatPrice } from '@/lib/sarpo-data';
 import { useProducts, useHeroSlides, useCollections, useProductGallery, useRecommendedProducts, useNewProducts, apiPostDirect } from '@/lib/use-api-data';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { useCartStore } from '@/lib/cart-store';
 import { toast } from 'sonner';
 
@@ -30,7 +32,7 @@ import { toast } from 'sonner';
 type PageView = 'home' | 'catalog' | 'product' | 'cart';
 
 /* ──────────────── Header ──────────────── */
-function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { onNavigate: (page: PageView) => void; currentPage: PageView; onSearch: (query: string) => void; onCollectionNavigate: (collection: string) => void }) {
+function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate, onContactClick }: { onNavigate: (page: PageView) => void; currentPage: PageView; onSearch: (query: string) => void; onCollectionNavigate: (collection: string) => void; onContactClick: () => void }) {
   const cartCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.quantity, 0));
   const [headerSearch, setHeaderSearch] = useState('');
   const [visible, setVisible] = useState(true);
@@ -137,7 +139,7 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate }: { o
 
             {/* Operator bilan bog'lanish button */}
             <button
-              onClick={() => window.open('tel:+998901234567')}
+              onClick={onContactClick}
               className="bg-white p-2 md:p-2.5 rounded-full hover:scale-105 transition-all duration-300"
               style={{ color: '#680018' }}
               aria-label="Связаться с оператором"
@@ -257,6 +259,95 @@ function Footer({ onCollectionNavigate }: { onCollectionNavigate: (collection: s
         </div>
       </div>
     </footer>
+  );
+}
+
+/* ──────────────── ContactModal ──────────────── */
+function ContactModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !phone.trim() || !message.trim()) {
+      toast.error('Заполните все поля');
+      return;
+    }
+    setSending(true);
+    try {
+      const res = await apiPostDirect('contact', {
+        name: name.trim(),
+        phone: phone.trim(),
+        message: message.trim(),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const msg = data?.error?.message || data?.message || 'Ошибка при отправке';
+        throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+      }
+      toast.success('Сообщение отправлено!', {
+        description: 'Оператор свяжется с вами в ближайшее время',
+      });
+      setName('');
+      setPhone('');
+      setMessage('');
+      onClose();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ошибка при отправке сообщения';
+      toast.error(msg);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-medium text-[#1A1314]">Связаться с оператором</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          <div>
+            <label className="text-xs font-medium text-[#706567] mb-1.5 block">Имя</label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ваше имя"
+              className="border-gray-200 focus:border-[#680018] focus:ring-[#680018]"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-[#706567] mb-1.5 block">Телефон</label>
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+998 90 123 45 67"
+              className="border-gray-200 focus:border-[#680018] focus:ring-[#680018]"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-[#706567] mb-1.5 block">Сообщение</label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Опишите ваш вопрос..."
+              rows={4}
+              className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-[#680018] focus:ring-1 focus:ring-[#680018] resize-none"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={sending}
+            className="w-full text-white py-3 font-medium tracking-wide rounded-sm transition-colors disabled:opacity-60"
+            style={{ backgroundColor: '#2D020C' }}
+          >
+            {sending ? 'Отправка...' : 'Отправить'}
+          </button>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -1031,17 +1122,21 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
         paymentMethod,
         items: items.map((item) => ({
           productId: item.product.id,
-          name: item.product.name,
-          price: item.product.price,
           quantity: item.quantity,
-          image: item.product.image,
         })),
         totalPrice: total,
       });
 
+      const data = await res.json();
       if (!res.ok) {
-        const data = await res.json();
-        const msg = data?.error?.message || data?.message || data?.error || 'Ошибка при создании заказа';
+        // Parse API error
+        const apiError = data?.error;
+        if (apiError?.fields) {
+          // Validation errors — show specific field errors
+          const fieldErrors = Object.values(apiError.fields).flat().join(', ');
+          throw new Error(fieldErrors || apiError.message || 'Ошибка валидации');
+        }
+        const msg = apiError?.message || data?.message || 'Ошибка при создании заказа';
         throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
       }
 
@@ -1387,6 +1482,7 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [catalogSearch, setCatalogSearch] = useState('');
   const [catalogCollection, setCatalogCollection] = useState('');
+  const [contactOpen, setContactOpen] = useState(false);
 
   const navigate = useCallback((page: PageView) => {
     setCurrentPage(page);
@@ -1401,7 +1497,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F9F7F5' }}>
-      <Header onNavigate={navigate} currentPage={currentPage} onSearch={(query) => { setCatalogSearch(query); setCatalogCollection(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+      <Header onNavigate={navigate} currentPage={currentPage} onSearch={(query) => { setCatalogSearch(query); setCatalogCollection(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onContactClick={() => setContactOpen(true)} />
       <main className="flex-1">
         <div
           key={currentPage + (selectedProduct?.id || '')}
@@ -1429,6 +1525,7 @@ export default function Home() {
         `}</style>
       </main>
       <Footer onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
     </div>
   );
 }
