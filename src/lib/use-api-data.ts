@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Product, HeroSlide, Collection } from '@/lib/sarpo-data';
+import { Product, HeroSlide, Collection, fallbackProducts, fallbackHeroSlides, fallbackCollections, fallbackProductGallery } from '@/lib/sarpo-data';
 
 /* ──── Products (with filters) ──── */
 export function useProducts(params?: {
@@ -15,8 +15,8 @@ export function useProducts(params?: {
   page?: number;
   limit?: number;
 }) {
-  const [data, setData] = useState<Product[]>([]);
-  const [total, setTotal] = useState(0);
+  const [data, setData] = useState<Product[]>(fallbackProducts);
+  const [total, setTotal] = useState(fallbackProducts.length);
   const [loading, setLoading] = useState(true);
   const prevKeyRef = useRef('');
 
@@ -45,8 +45,11 @@ export function useProducts(params?: {
       .then((json) => {
         if (!cancelled) {
           const products = json.products || json.data || [];
-          setData(products);
-          setTotal(json.total ?? products.length);
+          if (products.length > 0) {
+            setData(products);
+            setTotal(json.total ?? products.length);
+          }
+          // If API returns empty — keep fallback data
         }
       })
       .catch(() => {})
@@ -65,7 +68,7 @@ export function useProducts(params?: {
 
 /* ──── Hero Slides ──── */
 export function useHeroSlides() {
-  const [data, setData] = useState<HeroSlide[]>([]);
+  const [data, setData] = useState<HeroSlide[]>(fallbackHeroSlides);
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
 
@@ -80,7 +83,7 @@ export function useHeroSlides() {
       .then((json) => {
         if (!cancelled) {
           const slides = Array.isArray(json) ? json : (json.data || json.slides || []);
-          setData(slides);
+          if (slides.length > 0) setData(slides);
         }
       })
       .catch(() => {})
@@ -96,7 +99,7 @@ export function useHeroSlides() {
 
 /* ──── Collections ──── */
 export function useCollections() {
-  const [data, setData] = useState<string[]>([]);
+  const [data, setData] = useState<string[]>(fallbackCollections);
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
 
@@ -111,10 +114,12 @@ export function useCollections() {
       .then((json) => {
         if (!cancelled) {
           const raw = Array.isArray(json) ? json : (json.data || json.collections || []);
-          const names = raw.map((c: Collection | string) =>
-            typeof c === 'string' ? c : (c.name || c.slug || '')
-          ).filter(Boolean);
-          setData(names);
+          if (raw.length > 0) {
+            const names = raw.map((c: Collection | string) =>
+              typeof c === 'string' ? c : (c.name || c.slug || '')
+            ).filter(Boolean);
+            setData(names);
+          }
         }
       })
       .catch(() => {})
@@ -128,14 +133,14 @@ export function useCollections() {
   return { data, loading };
 }
 
-/* ──── Product Gallery (static placeholder) ──── */
+/* ──── Product Gallery ──── */
 export function useProductGallery() {
-  return { data: [] as string[] };
+  return { data: fallbackProductGallery };
 }
 
 /* ──── Recommended Products ──── */
 export function useRecommendedProducts() {
-  const [data, setData] = useState<Product[]>([]);
+  const [data, setData] = useState<Product[]>(fallbackProducts.filter((p) => p.isNew).slice(0, 5));
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
 
@@ -150,7 +155,7 @@ export function useRecommendedProducts() {
       .then((json) => {
         if (!cancelled) {
           const products = Array.isArray(json) ? json : (json.data || json.products || []);
-          setData(products);
+          if (products.length > 0) setData(products);
         }
       })
       .catch(() => {})
@@ -166,7 +171,7 @@ export function useRecommendedProducts() {
 
 /* ──── New Products ──── */
 export function useNewProducts() {
-  const [data, setData] = useState<Product[]>([]);
+  const [data, setData] = useState<Product[]>(fallbackProducts.filter((p) => p.isNew));
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
 
@@ -181,7 +186,7 @@ export function useNewProducts() {
       .then((json) => {
         if (!cancelled) {
           const products = Array.isArray(json) ? json : (json.data || json.products || []);
-          setData(products);
+          if (products.length > 0) setData(products);
         }
       })
       .catch(() => {})
