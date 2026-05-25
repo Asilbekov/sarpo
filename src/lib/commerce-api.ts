@@ -41,10 +41,11 @@ export async function apiGet(endpoint: string, extra?: Record<string, string>): 
 }
 
 export async function apiPost(endpoint: string, body: unknown): Promise<Response> {
+  const url = buildUrl(endpoint);
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT);
-    const res = await fetch(`${API_BASE}/${endpoint}`, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
