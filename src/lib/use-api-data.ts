@@ -7,10 +7,15 @@ const API_BASE = 'https://staging.lume.uz/api/commerce';
 const VENDOR_ID = '9e830a58-8fc7-41c9-a470-3b9cc2446069';
 const SALE_POINT_ID = '9e979274-baf3-457d-b5f8-3d25042ebaf4';
 
+/** Auth headers required by the backend */
+const AUTH_HEADERS: Record<string, string> = {
+  'X-Auth-Vendor': VENDOR_ID,
+  'X-Auth-Salepoint': SALE_POINT_ID,
+  'Accept': 'application/json',
+};
+
 function buildApiUrl(endpoint: string, extra?: Record<string, string>): string {
   const url = new URL(`${API_BASE}/${endpoint}`);
-  url.searchParams.set('vendor_id', VENDOR_ID);
-  url.searchParams.set('sale_point_id', SALE_POINT_ID);
   if (extra) {
     Object.entries(extra).forEach(([k, v]) => {
       if (v !== undefined && v !== '') url.searchParams.set(k, v);
@@ -20,9 +25,11 @@ function buildApiUrl(endpoint: string, extra?: Record<string, string>): string {
 }
 
 /* ──── Safe JSON fetch helper ──── */
-async function safeFetchJson(url: string, label: string): Promise<unknown | null> {
+async function safeFetchJson(url: string, label: string, extraHeaders?: Record<string, string>): Promise<unknown | null> {
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      headers: { ...AUTH_HEADERS, ...extraHeaders },
+    });
     if (!res.ok) {
       console.warn(`[SARPO API] GET ${label} → ${res.status}`);
       return null;
@@ -225,7 +232,7 @@ export async function apiPostDirect(endpoint: string, body: unknown): Promise<Re
   const url = buildApiUrl(endpoint);
   return fetch(url, {
     method: 'POST',
-    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    headers: { ...AUTH_HEADERS, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
 }

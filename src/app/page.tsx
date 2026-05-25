@@ -328,15 +328,16 @@ function HomePage({
   const [slideIndex, setSlideIndex] = useState(0);
 
   useEffect(() => {
+    if (heroSlides.length <= 1) return;
     const t = setInterval(() => {
       setSlideIndex((i) => (i + 1) % heroSlides.length);
     }, 6000);
     return () => clearInterval(t);
-  }, []);
+  }, [heroSlides.length]);
 
-  const slide = heroSlides[slideIndex];
-  const next = () => setSlideIndex((i) => (i + 1) % heroSlides.length);
-  const prev = () => setSlideIndex((i) => (i - 1 + heroSlides.length) % heroSlides.length);
+  const slide = heroSlides[slideIndex] || heroSlides[0];
+  const next = () => setSlideIndex((i) => heroSlides.length > 0 ? (i + 1) % heroSlides.length : 0);
+  const prev = () => setSlideIndex((i) => heroSlides.length > 0 ? (i - 1 + heroSlides.length) % heroSlides.length : 0);
 
   if (loadingSlides || loadingRecommended || loadingNew) {
     return (
@@ -391,10 +392,10 @@ function HomePage({
             <h1
               className="text-xl md:text-4xl lg:text-[44px] font-bold text-[#1A1314] mb-3 md:mb-6 leading-[1.1]"
             >
-              {slide.title}
+              {slide?.title || ''}
             </h1>
             <p className="text-[11px] md:text-sm lg:text-base text-[#1A1314]/85 mb-6 md:mb-10 max-w-lg leading-relaxed">
-              {slide.subtitle}
+              {slide?.subtitle || ''}
             </p>
           </div>
 
