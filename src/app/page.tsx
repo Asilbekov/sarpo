@@ -894,7 +894,7 @@ function ProductPage({
   onSelectProduct: (product: Product) => void;
   onGoBack?: () => void;
 }) {
-  const { data: products } = useProducts();
+  const { data: recommendedProducts } = useRecommendedProducts();
   const { data: productGallery } = useProductGallery();
   const [quantity, setQuantity] = useState(1);
   const [activeImg, setActiveImg] = useState(0);
@@ -904,8 +904,6 @@ function ProductPage({
     product.image,
     ...productGallery.filter((p) => p !== product.image),
   ].slice(0, 4);
-
-  const recommendedProducts = products.filter((p) => p.id !== product.id).slice(0, 10);
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
