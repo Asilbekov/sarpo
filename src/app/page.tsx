@@ -28,6 +28,19 @@ import { toast } from 'sonner';
 /* ──────────────── Types ──────────────── */
 type PageView = 'home' | 'catalog' | 'product' | 'cart';
 
+/* ──────────────── BackButton ──────────────── */
+function BackButton({ onBack }: { onBack: () => void }) {
+  return (
+    <button
+      onClick={onBack}
+      className="inline-flex items-center gap-2 text-sm md:text-base font-medium text-[#680018] hover:text-[#2D020C] transition-colors mb-4 md:mb-6 group"
+    >
+      <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:-translate-x-1" strokeWidth={2} />
+      Назад
+    </button>
+  );
+}
+
 /* ──────────────── Header ──────────────── */
 function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate, onContactClick, collections }: { onNavigate: (page: PageView) => void; currentPage: PageView; onSearch: (query: string) => void; onCollectionNavigate: (collection: string) => void; onContactClick: () => void; collections: string[] }) {
   const cartCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.quantity, 0));
@@ -588,10 +601,12 @@ function CatalogPage({
   onSelectProduct,
   initialSearch = '',
   initialCollection = '',
+  onGoBack,
 }: {
   onSelectProduct: (product: Product) => void;
   initialSearch?: string;
   initialCollection?: string;
+  onGoBack?: () => void;
 }) {
   const { data: products, loading: loadingProducts } = useProducts();
   const { data: collections, loading: loadingCollections } = useCollections();
@@ -724,6 +739,7 @@ function CatalogPage({
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8 md:py-10">
+      {onGoBack && <BackButton onBack={onGoBack} />}
       {/* Header */}
       <div className="mb-6 md:mb-8">
         <h1 className="text-3xl md:text-4xl font-medium text-[#1A1314] mb-2">Каталог товаров</h1>
@@ -820,10 +836,12 @@ function ProductPage({
   product,
   onNavigate,
   onSelectProduct,
+  onGoBack,
 }: {
   product: Product;
   onNavigate: (page: PageView) => void;
   onSelectProduct: (product: Product) => void;
+  onGoBack?: () => void;
 }) {
   const { data: products } = useProducts();
   const { data: productGallery } = useProductGallery();
@@ -848,6 +866,7 @@ function ProductPage({
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8 md:py-12">
+      {onGoBack && <BackButton onBack={onGoBack} />}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-20 mb-16 md:mb-20">
         {/* Image Section — full width on mobile */}
         <div>
@@ -997,7 +1016,7 @@ function ProductPage({
 }
 
 /* ──────────────── CartPage ──────────────── */
-function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView) => void; onSelectProduct: (product: Product) => void }) {
+function CartPage({ onNavigate, onSelectProduct, onGoBack }: { onNavigate: (page: PageView) => void; onSelectProduct: (product: Product) => void; onGoBack?: () => void }) {
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const moveToCompleted = useCartStore((s) => s.moveToCompleted);
@@ -1090,6 +1109,7 @@ function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 md:px-12 py-8 md:py-12">
+      {onGoBack && <BackButton onBack={onGoBack} />}
       <div className="mb-8 md:mb-12">
         <h1 className="text-3xl md:text-4xl font-medium text-[#1A1314] mb-2">
           Корзина оформление заказа
@@ -1436,21 +1456,51 @@ export default function Home() {
   const [catalogCollection, setCatalogCollection] = useState('');
   const [contactOpen, setContactOpen] = useState(false);
   const { data: collections } = useCollections();
+  const [previousPage, setPreviousPage] = useState<PageView | null>(null);
 
   const navigate = useCallback((page: PageView) => {
+    setPreviousPage(currentPage);
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [currentPage]);
+
+  const goBack = useCallback(() => {
+    if (previousPage) {
+      setCurrentPage(previousPage);
+      setPreviousPage(null);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      setCurrentPage('home');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [previousPage]);
 
   const selectProduct = useCallback((product: Product) => {
+    setPreviousPage(currentPage);
     setSelectedProduct(product);
     setCurrentPage('product');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+  }, [currentPage]);
+
+  const navigateToSearch = useCallback((query: string) => {
+    setPreviousPage(currentPage);
+    setCatalogSearch(query);
+    setCatalogCollection('');
+    setCurrentPage('catalog');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
+  const navigateToCollection = useCallback((col: string) => {
+    setPreviousPage(currentPage);
+    setCatalogCollection(col);
+    setCatalogSearch('');
+    setCurrentPage('catalog');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F9F7F5' }}>
-      <Header onNavigate={navigate} currentPage={currentPage} onSearch={(query) => { setCatalogSearch(query); setCatalogCollection(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onContactClick={() => setContactOpen(true)} collections={collections} />
+      <Header onNavigate={navigate} currentPage={currentPage} onSearch={navigateToSearch} onCollectionNavigate={navigateToCollection} onContactClick={() => setContactOpen(true)} collections={collections} />
       <main className="flex-1">
         <div
           key={currentPage + (selectedProduct?.id || '')}
@@ -1458,16 +1508,16 @@ export default function Home() {
           style={{ animation: 'fadeIn 0.4s ease-out' }}
         >
           {currentPage === 'home' && (
-            <HomePage onNavigate={navigate} onSelectProduct={selectProduct} onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+            <HomePage onNavigate={navigate} onSelectProduct={selectProduct} onCollectionNavigate={navigateToCollection} />
           )}
           {currentPage === 'catalog' && (
-            <CatalogPage key={`${catalogSearch}-${catalogCollection}`} onSelectProduct={selectProduct} initialSearch={catalogSearch} initialCollection={catalogCollection} />
+            <CatalogPage key={`${catalogSearch}-${catalogCollection}`} onSelectProduct={selectProduct} initialSearch={catalogSearch} initialCollection={catalogCollection} onGoBack={goBack} />
           )}
           {currentPage === 'product' && selectedProduct && (
-            <ProductPage product={selectedProduct} onNavigate={navigate} onSelectProduct={selectProduct} />
+            <ProductPage product={selectedProduct} onNavigate={navigate} onSelectProduct={selectProduct} onGoBack={goBack} />
           )}
           {currentPage === 'cart' && (
-            <CartPage onNavigate={navigate} onSelectProduct={selectProduct} />
+            <CartPage onNavigate={navigate} onSelectProduct={selectProduct} onGoBack={goBack} />
           )}
         </div>
         <style jsx>{`
@@ -1477,7 +1527,7 @@ export default function Home() {
           }
         `}</style>
       </main>
-      <Footer onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} collections={collections} />
+      <Footer onCollectionNavigate={navigateToCollection} collections={collections} />
       <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
     </div>
   );
