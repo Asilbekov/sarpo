@@ -633,6 +633,8 @@ function CatalogPage({
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState(initialState?.sortBy ?? 'newest');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [collectionsOpen, setCollectionsOpen] = useState(true);
+  const [priceOpen, setPriceOpen] = useState(true);
   const [priceMin, setPriceMin] = useState(initialState?.priceMin ?? PRICE_MIN);
   const [priceMax, setPriceMax] = useState(initialState?.priceMax ?? PRICE_MAX);
 
@@ -689,70 +691,98 @@ function CatalogPage({
 
   const filterContent = (
     <>
-      <div className="mb-6 md:mb-8">
-        <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4 text-[#1A1314]">Коллекции</h3>
-        <ul className="space-y-2.5 md:space-y-3">
-          {collections.map((col) => (
-            <li key={col} className="flex items-center justify-between">
-              <label className="text-xs md:text-sm text-[#1A1314]/80 cursor-pointer">
-                {col}
-              </label>
-              <input
-                type="checkbox"
-                checked={selectedCollections.includes(col)}
-                onChange={() => toggleCollection(col)}
-                className="w-3.5 h-3.5 md:w-4 md:h-4 rounded border-gray-300 cursor-pointer accent-[#680018]"
-              />
-            </li>
-          ))}
-        </ul>
+      {/* Коллекции — collapsible */}
+      <div className="mb-4 md:mb-5">
+        <button
+          onClick={() => setCollectionsOpen(!collectionsOpen)}
+          className="flex items-center justify-between w-full text-left group/section"
+        >
+          <h3 className="text-xs md:text-sm font-medium text-[#1A1314]">Коллекции</h3>
+          <ChevronDown
+            className={`w-3.5 h-3.5 md:w-4 md:h-4 text-[#706567] transition-transform duration-200 ${collectionsOpen ? 'rotate-0' : '-rotate-90'}`}
+          />
+        </button>
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${collectionsOpen ? 'max-h-[600px] opacity-100 mt-3 md:mt-4' : 'max-h-0 opacity-0 mt-0'}`}
+        >
+          <ul className="space-y-2.5 md:space-y-3">
+            {collections.map((col) => (
+              <li key={col} className="flex items-center justify-between">
+                <label className="text-xs md:text-sm text-[#1A1314]/80 cursor-pointer">
+                  {col}
+                </label>
+                <input
+                  type="checkbox"
+                  checked={selectedCollections.includes(col)}
+                  onChange={() => toggleCollection(col)}
+                  className="w-3.5 h-3.5 md:w-4 md:h-4 rounded border-gray-300 cursor-pointer accent-[#680018]"
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
-      {/* Price Filter */}
+      {/* Divider */}
+      <div className="border-t border-gray-200 my-4 md:my-5" />
+
+      {/* Цена — collapsible */}
       <div>
-        <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4 text-[#1A1314]">Цена</h3>
-        <div className="w-full relative h-1.5 bg-gray-200 rounded mb-3 md:mb-4">
-          {/* Active track between the two thumbs */}
-          <div
-            className="absolute h-1.5 rounded"
-            style={{
-              backgroundColor: '#680018',
-              left: `${((priceMin - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
-              right: `${100 - ((priceMax - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
-            }}
+        <button
+          onClick={() => setPriceOpen(!priceOpen)}
+          className="flex items-center justify-between w-full text-left group/section"
+        >
+          <h3 className="text-xs md:text-sm font-medium text-[#1A1314]">Цена</h3>
+          <ChevronDown
+            className={`w-3.5 h-3.5 md:w-4 md:h-4 text-[#706567] transition-transform duration-200 ${priceOpen ? 'rotate-0' : '-rotate-90'}`}
           />
-          {/* Min thumb */}
-          <input
-            type="range"
-            min={PRICE_MIN}
-            max={PRICE_MAX}
-            step={1}
-            value={priceMin}
-            onChange={(e) => {
-              const val = Number(e.target.value);
-              setPriceMin(Math.min(val, priceMax - 1));
-            }}
-            className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#680018] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#680018] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
-            style={{ top: '50%', transform: 'translateY(-50%)' }}
-          />
-          {/* Max thumb */}
-          <input
-            type="range"
-            min={PRICE_MIN}
-            max={PRICE_MAX}
-            step={1}
-            value={priceMax}
-            onChange={(e) => {
-              const val = Number(e.target.value);
-              setPriceMax(Math.max(val, priceMin + 1));
-            }}
-            className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#680018] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#680018] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
-            style={{ top: '50%', transform: 'translateY(-50%)' }}
-          />
-        </div>
-        <div className="flex justify-between text-[10px] md:text-xs text-[#706567]">
-          <span>{formatPrice(priceMin)}</span>
-          <span>{formatPrice(priceMax)}</span>
+        </button>
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${priceOpen ? 'max-h-[200px] opacity-100 mt-3 md:mt-4' : 'max-h-0 opacity-0 mt-0'}`}
+        >
+          <div className="w-full relative h-1.5 bg-gray-200 rounded mb-3 md:mb-4">
+            {/* Active track between the two thumbs */}
+            <div
+              className="absolute h-1.5 rounded"
+              style={{
+                backgroundColor: '#680018',
+                left: `${((priceMin - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
+                right: `${100 - ((priceMax - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)) * 100}%`,
+              }}
+            />
+            {/* Min thumb */}
+            <input
+              type="range"
+              min={PRICE_MIN}
+              max={PRICE_MAX}
+              step={1}
+              value={priceMin}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                setPriceMin(Math.min(val, priceMax - 1));
+              }}
+              className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#680018] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#680018] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+              style={{ top: '50%', transform: 'translateY(-50%)' }}
+            />
+            {/* Max thumb */}
+            <input
+              type="range"
+              min={PRICE_MIN}
+              max={PRICE_MAX}
+              step={1}
+              value={priceMax}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                setPriceMax(Math.max(val, priceMin + 1));
+              }}
+              className="absolute w-full h-1.5 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#680018] [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#680018] [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+              style={{ top: '50%', transform: 'translateY(-50%)' }}
+            />
+          </div>
+          <div className="flex justify-between text-[10px] md:text-xs text-[#706567]">
+            <span>{formatPrice(priceMin)}</span>
+            <span>{formatPrice(priceMax)}</span>
+          </div>
         </div>
       </div>
     </>
