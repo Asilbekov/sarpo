@@ -1025,6 +1025,8 @@ function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [orderLoading, setOrderLoading] = useState(false);
+  const [cartExpanded, setCartExpanded] = useState(true);
+  const [completedExpanded, setCompletedExpanded] = useState(false);
 
   // UUID regex pattern
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -1112,291 +1114,339 @@ function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView
         <p className="text-[#680018] text-xs md:text-sm">Оформление заказа</p>
       </div>
 
-      <div className="flex flex-col gap-8 md:gap-12">
-        {/* ── Table 1: Completed Orders ── */}
-        {completedOrders.length > 0 && (
-        <div className="bg-white p-4 md:p-6 shadow-sm rounded-md border border-gray-100">
-          <div className="mb-4 md:mb-6">
-            <h2 className="text-xl md:text-2xl font-medium text-[#1A1314] mb-1">Оформленные заказы</h2>
-            <p className="text-[#706567] text-xs md:text-sm">Ваши подтверждённые заказы</p>
-          </div>
+      <div className="flex flex-col gap-6 md:gap-8">
+        {/* ── Section 1: Cart (Корзина) — expanded by default ── */}
+        <div className="bg-white shadow-sm rounded-md border border-gray-100 overflow-hidden">
+          <button
+            onClick={() => setCartExpanded(!cartExpanded)}
+            className="w-full flex items-center justify-between px-4 md:px-6 py-4 md:py-5 hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 text-[#680018]" />
+              <div className="text-left">
+                <h2 className="text-lg md:text-xl font-medium text-[#1A1314]">Корзина</h2>
+                {items.length > 0 && (
+                  <p className="text-[#706567] text-[11px] md:text-xs">{items.length} товар(ов) · {formatPrice(total)}</p>
+                )}
+              </div>
+            </div>
+            <ChevronDown
+              className={`w-5 h-5 md:w-6 md:h-6 text-[#706567] transition-transform duration-300 ${cartExpanded ? 'rotate-180' : ''}`}
+            />
+          </button>
 
-          <div className="space-y-4">
-            {completedOrders.map((order) => (
-              <div key={order.id} className="border border-gray-200 rounded-md p-3 md:p-4" style={{ backgroundColor: '#F9F7F5' }}>
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-gray-200">
-                  <div>
-                    <span className="text-xs md:text-sm font-medium text-[#680018]">Заказ #{order.id.slice(0, 8)}</span>
-                    <span className="text-xs text-[#706567] ml-2">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</span>
+          <div
+            className={`transition-all duration-300 ease-in-out ${cartExpanded ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+          >
+            <div className="px-4 md:px-6 pb-4 md:pb-6">
+              <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
+                {/* Cart Items Table */}
+                <div className="flex-1">
+                  {/* Table header */}
+                  <div className="hidden md:grid grid-cols-8 text-xs md:text-sm font-medium text-[#1A1314] border-b border-gray-200 pb-3 md:pb-4 mb-3 md:mb-4">
+                    <div className="col-span-1">Фото</div>
+                    <div className="col-span-3">Наименование продукта</div>
+                    <div className="col-span-2 text-center">Количество</div>
+                    <div className="col-span-2 text-center">Общая сумма</div>
                   </div>
-                  <span className="text-sm md:text-base font-medium text-[#1A1314]">{formatPrice(order.totalPrice)}</span>
-                </div>
-                <div className="space-y-2">
-                  {order.items.map((item) => (
+
+                  <div className="space-y-4 md:space-y-6">
+                    {items.map((item) => (
                     <div
                       key={item.product.id}
-                      className="grid grid-cols-12 items-center text-xs md:text-sm gap-2 cursor-pointer hover:bg-white/60 rounded-sm transition-colors px-1"
+                      className="grid grid-cols-8 items-center text-xs md:text-sm gap-2 cursor-pointer hover:bg-[#F9F7F5] rounded-sm transition-colors -mx-1 px-1"
                       onClick={() => onSelectProduct(item.product)}
                     >
-                      <div className="col-span-2 md:col-span-1 flex items-center justify-center">
+                      {/* Photo */}
+                      <div className="col-span-1 flex items-center justify-center">
                         {item.product.image ? (
-                        <img src={item.product.image} alt={item.product.name} className="w-10 h-14 md:w-12 md:h-16 object-cover rounded-sm" />
+                        <img
+                          src={item.product.image}
+                          alt={item.product.name}
+                          className="w-12 h-16 md:w-16 md:h-20 object-cover rounded-sm"
+                          style={{ backgroundColor: '#FFFFFF' }}
+                        />
                         ) : (
-                          <div className="w-10 h-14 md:w-12 md:h-16 bg-gray-200 rounded-sm flex items-center justify-center">
-                            <ShoppingBag className="w-5 h-5 text-gray-400" />
+                          <div className="w-12 h-16 md:w-16 md:h-20 bg-gray-100 rounded-sm flex items-center justify-center">
+                            <ShoppingBag className="w-6 h-6 text-gray-300" />
                           </div>
                         )}
                       </div>
-                      <div className="col-span-5 md:col-span-6">
-                        <p className="text-xs md:text-sm font-medium text-[#1A1314] line-clamp-1 hover:text-[#680018] transition-colors">{item.product.name}</p>
+                      {/* Name */}
+                      <div className="col-span-3">
+                        <p className="text-sm md:text-base font-medium text-[#1A1314] line-clamp-2 hover:text-[#680018] transition-colors">{item.product.name}</p>
                       </div>
-                      <div className="col-span-2 text-center text-[#706567]">{item.quantity} шт</div>
-                      <div className="col-span-3 text-right text-xs md:text-sm font-medium text-[#1A1314]">{formatPrice(item.product.price * item.quantity)}</div>
+                      {/* Quantity */}
+                      <div className="col-span-2 flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center">
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                            className="w-7 h-7 md:w-9 md:h-9 border flex items-center justify-center hover:bg-[#F2E5D5] transition-colors text-xs md:text-sm"
+                            style={{ backgroundColor: '#FCF7F1', borderColor: '#EDDCCC' }}
+                          >
+                            −
+                          </button>
+                          <div
+                            className="w-8 h-7 md:w-12 md:h-9 border-t border-b bg-white flex items-center justify-center font-medium text-xs md:text-sm"
+                            style={{ borderColor: '#EDDCCC' }}
+                          >
+                            {item.quantity}
+                          </div>
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            className="w-7 h-7 md:w-9 md:h-9 border flex items-center justify-center hover:bg-[#F2E5D5] transition-colors text-xs md:text-sm"
+                            style={{ backgroundColor: '#FCF7F1', borderColor: '#EDDCCC' }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                      {/* Total */}
+                      <div className="col-span-2 flex justify-center items-center">
+                        <span className="text-sm md:text-lg font-medium text-[#1A1314]">
+                          {formatPrice(item.product.price * item.quantity)}
+                        </span>
+                      </div>
                     </div>
-                  ))}
+                    ))}
+                    {items.length === 0 && (
+                      <div className="text-center py-10 md:py-12">
+                        <p className="text-[#706567] text-base md:text-lg mb-4">Корзина пуста</p>
+                        <button
+                          onClick={() => onNavigate('catalog')}
+                          className="text-[#680018] text-sm font-medium hover:underline"
+                        >
+                          Перейти в каталог →
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        )}
 
-        <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
-          {/* ── Table 2: Cart Items ── */}
-          <div className="flex-1 bg-white p-4 md:p-6 shadow-sm rounded-md border border-gray-100">
-            <div className="mb-4 md:mb-6">
-              <h2 className="text-xl md:text-2xl font-medium text-[#1A1314] mb-1">Корзина</h2>
-              <p className="text-[#706567] text-xs md:text-sm">Товары, которые вы выбрали</p>
-            </div>
-
-            {/* Table header */}
-            <div className="hidden md:grid grid-cols-8 text-xs md:text-sm font-medium text-[#1A1314] border-b border-gray-200 pb-3 md:pb-4 mb-3 md:mb-4">
-              <div className="col-span-1">Фото</div>
-              <div className="col-span-3">Наименование продукта</div>
-              <div className="col-span-2 text-center">Количество</div>
-              <div className="col-span-2 text-center">Общая сумма</div>
-            </div>
-
-            <div className="space-y-4 md:space-y-6">
-              {items.map((item) => (
-              <div
-                key={item.product.id}
-                className="grid grid-cols-8 items-center text-xs md:text-sm gap-2 cursor-pointer hover:bg-[#F9F7F5] rounded-sm transition-colors -mx-1 px-1"
-                onClick={() => onSelectProduct(item.product)}
-              >
-                {/* Photo */}
-                <div className="col-span-1 flex items-center justify-center">
-                  {item.product.image ? (
-                  <img
-                    src={item.product.image}
-                    alt={item.product.name}
-                    className="w-12 h-16 md:w-16 md:h-20 object-cover rounded-sm"
-                    style={{ backgroundColor: '#FFFFFF' }}
-                  />
-                  ) : (
-                    <div className="w-12 h-16 md:w-16 md:h-20 bg-gray-100 rounded-sm flex items-center justify-center">
-                      <ShoppingBag className="w-6 h-6 text-gray-300" />
+                {/* Right: Checkout Form */}
+                {items.length > 0 && (
+                <div className="w-full lg:w-[380px] md:w-[400px]">
+                  <div
+                    className="p-5 md:p-8 rounded-md border border-gray-200 shadow-sm"
+                    style={{ backgroundColor: '#F9F7F5' }}
+                  >
+                    <div className="flex justify-between items-center mb-5 md:mb-6">
+                      <h2 className="text-lg md:text-xl font-medium text-[#1A1314]">
+                        Оформление заказа
+                      </h2>
+                      <Wallet className="w-4 h-4 md:w-5 md:h-5 text-[#706567]" />
                     </div>
-                  )}
-                </div>
-                {/* Name */}
-                <div className="col-span-3">
-                  <p className="text-sm md:text-base font-medium text-[#1A1314] line-clamp-2 hover:text-[#680018] transition-colors">{item.product.name}</p>
-                </div>
-                {/* Quantity */}
-                <div className="col-span-2 flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex items-center">
+
+                    <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Имя"
+                          value={customerName}
+                          onChange={(e) => setCustomerName(e.target.value)}
+                          className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
+                          style={{ backgroundColor: '#EFE6E1' }}
+                        />
+                        <User className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-[#680018]" />
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="tel"
+                          placeholder="Телефон"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
+                          style={{ backgroundColor: '#EFE6E1' }}
+                        />
+                        <Phone className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-[#680018]" />
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Адрес"
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
+                          style={{ backgroundColor: '#EFE6E1' }}
+                        />
+                        <MapPin className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-[#680018]" />
+                      </div>
+                    </div>
+
+                    <div className="mb-6 md:mb-8">
+                      <h3 className="text-xs md:text-sm text-[#706567] mb-2.5 md:mb-3">Методы оплаты</h3>
+                      <div className="grid grid-cols-3 gap-2.5 md:gap-3">
+                        {/* Payme */}
+                        <button
+                          onClick={() => setPaymentMethod('payme')}
+                          className={
+                            'border-2 bg-white rounded-md py-3 md:py-4 flex items-center justify-center font-bold relative text-sm md:text-lg transition-all duration-300 ' +
+                            (paymentMethod === 'payme' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
+                          }
+                          style={{ color: '#38B2AC' }}
+                        >
+                          <span className="italic">payme</span>
+                          {paymentMethod === 'payme' && (
+                            <div
+                              className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center"
+                              style={{ backgroundColor: '#680018' }}
+                            >
+                              <svg viewBox="0 0 10 10" className="w-2.5 h-2.5 fill-white">
+                                <path d="M3.5 7.5L1.5 5.5L2.2 4.8L3.5 6.1L7.8 1.8L8.5 2.5L3.5 7.5Z" />
+                              </svg>
+                            </div>
+                          )}
+                        </button>
+                        {/* Uzum */}
+                        <button
+                          onClick={() => setPaymentMethod('uzum')}
+                          className={
+                            'border-2 bg-white rounded-md py-3 md:py-4 flex items-center justify-center font-bold relative text-sm md:text-lg transition-all duration-300 ' +
+                            (paymentMethod === 'uzum' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
+                          }
+                          style={{ color: '#7B2FF2' }}
+                        >
+                          uzum
+                          {paymentMethod === 'uzum' && (
+                            <div
+                              className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center"
+                              style={{ backgroundColor: '#680018' }}
+                            >
+                              <svg viewBox="0 0 10 10" className="w-2.5 h-2.5 fill-white">
+                                <path d="M3.5 7.5L1.5 5.5L2.2 4.8L3.5 6.1L7.8 1.8L8.5 2.5L3.5 7.5Z" />
+                              </svg>
+                            </div>
+                          )}
+                        </button>
+                        {/* Click */}
+                        <button
+                          onClick={() => setPaymentMethod('click')}
+                          className={
+                            'border-2 bg-white rounded-md py-3 md:py-4 flex items-center justify-center font-bold relative text-sm md:text-lg transition-all duration-300 ' +
+                            (paymentMethod === 'click' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
+                          }
+                          style={{ color: '#3182CE' }}
+                        >
+                          click
+                          {paymentMethod === 'click' && (
+                            <div
+                              className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center"
+                              style={{ backgroundColor: '#680018' }}
+                            >
+                              <svg viewBox="0 0 10 10" className="w-2.5 h-2.5 fill-white">
+                                <path d="M3.5 7.5L1.5 5.5L2.2 4.8L3.5 6.1L7.8 1.8L8.5 2.5L3.5 7.5Z" />
+                              </svg>
+                            </div>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Total */}
+                    <div className="flex justify-between items-center mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
+                      <span className="text-sm text-[#706567]">Итого:</span>
+                      <span className="text-lg md:text-xl font-medium text-[#1A1314]">
+                        {formatPrice(total)}
+                      </span>
+                    </div>
+
+                    {/* Operator bilan bog'lanish */}
                     <button
-                      onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                      className="w-7 h-7 md:w-9 md:h-9 border flex items-center justify-center hover:bg-[#F2E5D5] transition-colors text-xs md:text-sm"
-                      style={{ backgroundColor: '#FCF7F1', borderColor: '#EDDCCC' }}
+                      onClick={() => window.open('tel:+998901234567')}
+                      className="w-full flex items-center justify-center gap-2 py-3 md:py-4 font-medium rounded-md transition-all duration-300 tracking-wide border-2 border-[#680018] text-[#680018] hover:bg-[#680018] hover:text-white mb-3"
                     >
-                      −
+                      <Phone className="w-4 h-4 md:w-5 md:h-5" />
+                      Связаться с оператором
                     </button>
-                    <div
-                      className="w-8 h-7 md:w-12 md:h-9 border-t border-b bg-white flex items-center justify-center font-medium text-xs md:text-sm"
-                      style={{ borderColor: '#EDDCCC' }}
-                    >
-                      {item.quantity}
-                    </div>
+
                     <button
-                      onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                      className="w-7 h-7 md:w-9 md:h-9 border flex items-center justify-center hover:bg-[#F2E5D5] transition-colors text-xs md:text-sm"
-                      style={{ backgroundColor: '#FCF7F1', borderColor: '#EDDCCC' }}
+                      onClick={handleOrder}
+                      disabled={orderLoading || items.length === 0}
+                      className="w-full text-white py-3 md:py-4 font-medium rounded-md transition-colors tracking-wide hover:bg-[#680018] disabled:opacity-50 disabled:cursor-not-allowed"
+                      style={{ backgroundColor: '#2D020C' }}
                     >
-                      +
+                      {orderLoading ? 'Оформление...' : 'Оформить заказ'}
                     </button>
                   </div>
                 </div>
-                {/* Total */}
-                <div className="col-span-2 flex justify-center items-center">
-                  <span className="text-sm md:text-lg font-medium text-[#1A1314]">
-                    {formatPrice(item.product.price * item.quantity)}
-                  </span>
-                </div>
+                )}
               </div>
-              ))}
-              {items.length === 0 && (
-                <div className="text-center py-10 md:py-12">
-                  <p className="text-[#706567] text-base md:text-lg mb-4">Корзина пуста</p>
-                  <button
-                    onClick={() => onNavigate('catalog')}
-                    className="text-[#680018] text-sm font-medium hover:underline"
-                  >
-                    Перейти в каталог →
-                  </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Section 2: Completed Orders (Оформленные заказы) — collapsed by default ── */}
+        <div className="bg-white shadow-sm rounded-md border border-gray-100 overflow-hidden">
+          <button
+            onClick={() => setCompletedExpanded(!completedExpanded)}
+            className="w-full flex items-center justify-between px-4 md:px-6 py-4 md:py-5 hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <Wallet className="w-5 h-5 md:w-6 md:h-6 text-[#680018]" />
+              <div className="text-left">
+                <h2 className="text-lg md:text-xl font-medium text-[#1A1314]">Оформленные заказы</h2>
+                {completedOrders.length > 0 && (
+                  <p className="text-[#706567] text-[11px] md:text-xs">{completedOrders.length} заказ(ов)</p>
+                )}
+                {completedOrders.length === 0 && (
+                  <p className="text-[#706567] text-[11px] md:text-xs">Нет оформленных заказов</p>
+                )}
+              </div>
+            </div>
+            <ChevronDown
+              className={`w-5 h-5 md:w-6 md:h-6 text-[#706567] transition-transform duration-300 ${completedExpanded ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          <div
+            className={`transition-all duration-300 ease-in-out ${completedExpanded ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+          >
+            <div className="px-4 md:px-6 pb-4 md:pb-6">
+              {completedOrders.length > 0 ? (
+              <div className="space-y-4">
+                {completedOrders.map((order) => (
+                  <div key={order.id} className="border border-gray-200 rounded-md p-3 md:p-4" style={{ backgroundColor: '#F9F7F5' }}>
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-gray-200">
+                      <div>
+                        <span className="text-xs md:text-sm font-medium text-[#680018]">Заказ #{order.id.slice(0, 8)}</span>
+                        <span className="text-xs text-[#706567] ml-2">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</span>
+                      </div>
+                      <span className="text-sm md:text-base font-medium text-[#1A1314]">{formatPrice(order.totalPrice)}</span>
+                    </div>
+                    <div className="space-y-2">
+                      {order.items.map((item) => (
+                        <div
+                          key={item.product.id}
+                          className="grid grid-cols-12 items-center text-xs md:text-sm gap-2 cursor-pointer hover:bg-white/60 rounded-sm transition-colors px-1"
+                          onClick={() => onSelectProduct(item.product)}
+                        >
+                          <div className="col-span-2 md:col-span-1 flex items-center justify-center">
+                            {item.product.image ? (
+                            <img src={item.product.image} alt={item.product.name} className="w-10 h-14 md:w-12 md:h-16 object-cover rounded-sm" />
+                            ) : (
+                              <div className="w-10 h-14 md:w-12 md:h-16 bg-gray-200 rounded-sm flex items-center justify-center">
+                                <ShoppingBag className="w-5 h-5 text-gray-400" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="col-span-5 md:col-span-6">
+                            <p className="text-xs md:text-sm font-medium text-[#1A1314] line-clamp-1 hover:text-[#680018] transition-colors">{item.product.name}</p>
+                          </div>
+                          <div className="col-span-2 text-center text-[#706567]">{item.quantity} шт</div>
+                          <div className="col-span-3 text-right text-xs md:text-sm font-medium text-[#1A1314]">{formatPrice(item.product.price * item.quantity)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              ) : (
+                <div className="text-center py-8 md:py-10">
+                  <p className="text-[#706567] text-sm">Оформленных заказов пока нет</p>
                 </div>
               )}
             </div>
           </div>
-
-        {/* Right: Checkout Form */}
-        <div className="w-full lg:w-[380px] md:w-[400px]">
-          <div
-            className="p-5 md:p-8 rounded-md border border-gray-200 shadow-sm"
-            style={{ backgroundColor: '#F9F7F5' }}
-          >
-            <div className="flex justify-between items-center mb-5 md:mb-6">
-              <h2 className="text-lg md:text-xl font-medium text-[#1A1314]">
-                Оформление заказа
-              </h2>
-              <Wallet className="w-4 h-4 md:w-5 md:h-5 text-[#706567]" />
-            </div>
-
-            <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Имя"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
-                  style={{ backgroundColor: '#EFE6E1' }}
-                />
-                <User className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-[#680018]" />
-              </div>
-              <div className="relative">
-                <input
-                  type="tel"
-                  placeholder="Телефон"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
-                  style={{ backgroundColor: '#EFE6E1' }}
-                />
-                <Phone className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-[#680018]" />
-              </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Адрес"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full px-3 md:px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm outline-none focus:ring-1 focus:ring-[#680018]"
-                  style={{ backgroundColor: '#EFE6E1' }}
-                />
-                <MapPin className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-[#680018]" />
-              </div>
-            </div>
-
-            <div className="mb-6 md:mb-8">
-              <h3 className="text-xs md:text-sm text-[#706567] mb-2.5 md:mb-3">Методы оплаты</h3>
-              <div className="grid grid-cols-3 gap-2.5 md:gap-3">
-                {/* Payme */}
-                <button
-                  onClick={() => setPaymentMethod('payme')}
-                  className={
-                    'border-2 bg-white rounded-md py-3 md:py-4 flex items-center justify-center font-bold relative text-sm md:text-lg transition-all duration-300 ' +
-                    (paymentMethod === 'payme' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
-                  }
-                  style={{ color: '#38B2AC' }}
-                >
-                  <span className="italic">payme</span>
-                  {paymentMethod === 'payme' && (
-                    <div
-                      className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: '#680018' }}
-                    >
-                      <svg viewBox="0 0 10 10" className="w-2.5 h-2.5 fill-white">
-                        <path d="M3.5 7.5L1.5 5.5L2.2 4.8L3.5 6.1L7.8 1.8L8.5 2.5L3.5 7.5Z" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-                {/* Uzum */}
-                <button
-                  onClick={() => setPaymentMethod('uzum')}
-                  className={
-                    'border-2 bg-white rounded-md py-3 md:py-4 flex items-center justify-center font-bold relative text-sm md:text-lg transition-all duration-300 ' +
-                    (paymentMethod === 'uzum' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
-                  }
-                  style={{ color: '#7B2FF2' }}
-                >
-                  uzum
-                  {paymentMethod === 'uzum' && (
-                    <div
-                      className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: '#680018' }}
-                    >
-                      <svg viewBox="0 0 10 10" className="w-2.5 h-2.5 fill-white">
-                        <path d="M3.5 7.5L1.5 5.5L2.2 4.8L3.5 6.1L7.8 1.8L8.5 2.5L3.5 7.5Z" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-                {/* Click */}
-                <button
-                  onClick={() => setPaymentMethod('click')}
-                  className={
-                    'border-2 bg-white rounded-md py-3 md:py-4 flex items-center justify-center font-bold relative text-sm md:text-lg transition-all duration-300 ' +
-                    (paymentMethod === 'click' ? 'border-[#680018]' : 'border-gray-200 hover:border-[#680018]')
-                  }
-                  style={{ color: '#3182CE' }}
-                >
-                  click
-                  {paymentMethod === 'click' && (
-                    <div
-                      className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: '#680018' }}
-                    >
-                      <svg viewBox="0 0 10 10" className="w-2.5 h-2.5 fill-white">
-                        <path d="M3.5 7.5L1.5 5.5L2.2 4.8L3.5 6.1L7.8 1.8L8.5 2.5L3.5 7.5Z" />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Total */}
-            {items.length > 0 && (
-              <div className="flex justify-between items-center mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
-                <span className="text-sm text-[#706567]">Итого:</span>
-                <span className="text-lg md:text-xl font-medium text-[#1A1314]">
-                  {formatPrice(total)}
-                </span>
-              </div>
-            )}
-
-            {/* Operator bilan bog'lanish */}
-            <button
-              onClick={() => window.open('tel:+998901234567')}
-              className="w-full flex items-center justify-center gap-2 py-3 md:py-4 font-medium rounded-md transition-all duration-300 tracking-wide border-2 border-[#680018] text-[#680018] hover:bg-[#680018] hover:text-white mb-3"
-            >
-              <Phone className="w-4 h-4 md:w-5 md:h-5" />
-              Связаться с оператором
-            </button>
-
-            <button
-              onClick={handleOrder}
-              disabled={orderLoading || items.length === 0}
-              className="w-full text-white py-3 md:py-4 font-medium rounded-md transition-colors tracking-wide hover:bg-[#680018] disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#2D020C' }}
-            >
-              {orderLoading ? 'Оформление...' : 'Оформить заказ'}
-            </button>
-          </div>
-        </div>
         </div>
       </div>
     </div>
