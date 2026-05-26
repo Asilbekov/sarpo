@@ -365,17 +365,13 @@ function ProductCard({
         className="relative aspect-[3/4] overflow-hidden rounded-sm group-hover:shadow-xl transition-all duration-300 border border-gray-100"
         style={{ backgroundColor: '#FFFFFF' }}
       >
-        {product.image ? (
+        {product.image && (
           <img
             src={product.image}
             alt={product.name}
             className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
           />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-            <ShoppingBag className="w-12 h-12" />
-          </div>
         )}
         {/* Category badge */}
         {product.category && (
@@ -869,16 +865,12 @@ function ProductPage({
             className="aspect-[3/4] flex items-center justify-center overflow-hidden rounded-sm border border-gray-100"
             style={{ backgroundColor: '#FFFFFF' }}
           >
-            {gallery[activeImg] ? (
+            {gallery[activeImg] && (
             <img
               src={gallery[activeImg]}
               alt={product.name}
               className="w-full h-full object-cover object-center"
             />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                <ShoppingBag className="w-20 h-20" />
-              </div>
             )}
           </div>
 
@@ -1159,17 +1151,13 @@ function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView
                     >
                       {/* Photo */}
                       <div className="col-span-1 flex items-center justify-center">
-                        {item.product.image ? (
+                        {item.product.image && (
                         <img
                           src={item.product.image}
                           alt={item.product.name}
                           className="w-12 h-16 md:w-16 md:h-20 object-cover rounded-sm"
                           style={{ backgroundColor: '#FFFFFF' }}
                         />
-                        ) : (
-                          <div className="w-12 h-16 md:w-16 md:h-20 bg-gray-100 rounded-sm flex items-center justify-center">
-                            <ShoppingBag className="w-6 h-6 text-gray-300" />
-                          </div>
                         )}
                       </div>
                       {/* Name */}
@@ -1421,12 +1409,8 @@ function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView
                           onClick={() => onSelectProduct(item.product)}
                         >
                           <div className="col-span-2 md:col-span-1 flex items-center justify-center">
-                            {item.product.image ? (
+                            {item.product.image && (
                             <img src={item.product.image} alt={item.product.name} className="w-10 h-14 md:w-12 md:h-16 object-cover rounded-sm" />
-                            ) : (
-                              <div className="w-10 h-14 md:w-12 md:h-16 bg-gray-200 rounded-sm flex items-center justify-center">
-                                <ShoppingBag className="w-5 h-5 text-gray-400" />
-                              </div>
                             )}
                           </div>
                           <div className="col-span-5 md:col-span-6">
