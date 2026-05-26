@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Product, HeroSlide, Collection, fallbackProducts, fallbackHeroSlides, fallbackCollections, fallbackProductGallery } from '@/lib/sarpo-data';
+import { Product, HeroSlide, Collection } from '@/lib/sarpo-data';
 
 const API_BASE = 'https://staging.lume.uz/api/commerce';
 const VENDOR_ID = '9e830a58-8fc7-41c9-a470-3b9cc2446069';
@@ -90,7 +90,7 @@ async function fetchProductsWithFallback(subEndpoint: string, fallbackExtra?: Re
   const products = await fetchProductsFromMain(fallbackExtra);
   if (products.length > 0) return products;
 
-  // 3. Both failed — return empty (caller will use local fallback)
+  // 3. Both failed — return empty
   return [];
 }
 
@@ -106,8 +106,8 @@ export function useProducts(params?: {
   page?: number;
   limit?: number;
 }) {
-  const [data, setData] = useState<Product[]>(fallbackProducts);
-  const [total, setTotal] = useState(fallbackProducts.length);
+  const [data, setData] = useState<Product[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const prevKeyRef = useRef('');
 
@@ -131,9 +131,9 @@ export function useProducts(params?: {
     let cancelled = false;
 
     fetchProductsFromMain(extra).then((mapped) => {
-      if (!cancelled && mapped.length > 0) {
+      if (!cancelled) {
         setData(mapped);
-        // We don't have total from this call, but it's fine for catalog
+        setTotal(mapped.length);
       }
     }).catch(() => {}).finally(() => {
       if (!cancelled) setLoading(false);
@@ -150,7 +150,7 @@ export function useProducts(params?: {
 
 /* ──── Hero Slides ──── */
 export function useHeroSlides() {
-  const [data, setData] = useState<HeroSlide[]>(fallbackHeroSlides);
+  const [data, setData] = useState<HeroSlide[]>([]);
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
 
@@ -168,7 +168,7 @@ export function useHeroSlides() {
             image: (item.image as string) || '',
             title: (item.title as string) || '',
             subtitle: (item.subtitle as string) || '',
-          })).filter((s) => s.image); // only slides with images
+          })).filter((s) => s.image);
           if (mapped.length > 0) setData(mapped);
         }
       }
@@ -184,7 +184,7 @@ export function useHeroSlides() {
 
 /* ──── Collections ──── */
 export function useCollections() {
-  const [data, setData] = useState<string[]>(fallbackCollections);
+  const [data, setData] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
 
@@ -216,12 +216,12 @@ export function useCollections() {
 
 /* ──── Product Gallery ──── */
 export function useProductGallery() {
-  return { data: fallbackProductGallery };
+  return { data: [] as string[] };
 }
 
 /* ──── Recommended Products ──── */
 export function useRecommendedProducts() {
-  const [data, setData] = useState<Product[]>(fallbackProducts.filter((p) => p.isNew).slice(0, 5));
+  const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
 
@@ -247,7 +247,7 @@ export function useRecommendedProducts() {
 
 /* ──── New Products ──── */
 export function useNewProducts() {
-  const [data, setData] = useState<Product[]>(fallbackProducts.filter((p) => p.isNew));
+  const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
 
