@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   SlidersHorizontal,
   ChevronDown,
+  ChevronUp,
   User,
   Phone,
   MapPin,
@@ -768,16 +769,21 @@ function CatalogPage({
       </div>
 
       <div className="flex gap-6 md:gap-10 flex-col md:flex-row">
-        {/* Sidebar — shown when filtersOpen */}
-        {filtersOpen && (
-          <aside className="w-full md:w-56 lg:w-64 flex-shrink-0">
-            <div className="flex items-center justify-between font-medium mb-5 md:mb-6 text-[#1A1314]">
-              <span className="text-base md:text-lg">Фильтры</span>
-              <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5 text-[#1A1314]" />
-            </div>
-            {filterContent}
-          </aside>
-        )}
+        {/* Sidebar — always visible, content collapsible */}
+        <aside className="w-full md:w-56 lg:w-64 flex-shrink-0">
+          <button
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className="flex items-center justify-between w-full font-medium mb-5 md:mb-6 text-[#1A1314] bg-white rounded-md px-3 py-2 border border-gray-200 hover:border-[#680018] transition-colors cursor-pointer"
+          >
+            <span className="text-base md:text-lg">Фильтры</span>
+            {filtersOpen ? (
+              <ChevronUp className="w-4 h-4 md:w-5 md:h-5" />
+            ) : (
+              <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />
+            )}
+          </button>
+          {filtersOpen && filterContent}
+        </aside>
 
         {/* Main Content */}
         <div className="flex-1">
@@ -795,19 +801,6 @@ function CatalogPage({
             </div>
 
             <div className="flex gap-3">
-              {/* Filter toggle button */}
-              <button
-                onClick={() => setFiltersOpen(!filtersOpen)}
-                className={`flex items-center gap-2 px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm font-medium transition-colors border ${
-                  filtersOpen
-                    ? 'bg-[#680018] text-white border-[#680018]'
-                    : 'bg-white text-[#1A1314] border-gray-200 hover:border-[#680018] hover:text-[#680018]'
-                }`}
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                Фильтры
-              </button>
-
               {/* Sort dropdown */}
               <div className="relative">
                 <button
