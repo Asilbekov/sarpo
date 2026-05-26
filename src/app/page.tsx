@@ -633,8 +633,7 @@ function CatalogPage({
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState(initialState?.sortBy ?? 'newest');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [collectionsOpen, setCollectionsOpen] = useState(true);
-  const [priceOpen, setPriceOpen] = useState(true);
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [priceMin, setPriceMin] = useState(initialState?.priceMin ?? PRICE_MIN);
   const [priceMax, setPriceMax] = useState(initialState?.priceMax ?? PRICE_MAX);
 
@@ -691,56 +690,29 @@ function CatalogPage({
 
   const filterContent = (
     <>
-      {/* Коллекции — collapsible */}
-      <div className="mb-4 md:mb-5">
-        <button
-          onClick={() => setCollectionsOpen(!collectionsOpen)}
-          className="flex items-center justify-between w-full text-left group/section"
-        >
-          <h3 className="text-xs md:text-sm font-medium text-[#1A1314]">Коллекции</h3>
-          <ChevronDown
-            className={`w-3.5 h-3.5 md:w-4 md:h-4 text-[#706567] transition-transform duration-200 ${collectionsOpen ? 'rotate-0' : '-rotate-90'}`}
-          />
-        </button>
-        <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out ${collectionsOpen ? 'max-h-[600px] opacity-100 mt-3 md:mt-4' : 'max-h-0 opacity-0 mt-0'}`}
-        >
-          <ul className="space-y-2.5 md:space-y-3">
-            {collections.map((col) => (
-              <li key={col} className="flex items-center justify-between">
-                <label className="text-xs md:text-sm text-[#1A1314]/80 cursor-pointer">
-                  {col}
-                </label>
-                <input
-                  type="checkbox"
-                  checked={selectedCollections.includes(col)}
-                  onChange={() => toggleCollection(col)}
-                  className="w-3.5 h-3.5 md:w-4 md:h-4 rounded border-gray-300 cursor-pointer accent-[#680018]"
-                />
-              </li>
-            ))}
-          </ul>
-        </div>
+      <div className="mb-6 md:mb-8">
+        <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4 text-[#1A1314]">Коллекции</h3>
+        <ul className="space-y-2.5 md:space-y-3">
+          {collections.map((col) => (
+            <li key={col} className="flex items-center justify-between">
+              <label className="text-xs md:text-sm text-[#1A1314]/80 cursor-pointer">
+                {col}
+              </label>
+              <input
+                type="checkbox"
+                checked={selectedCollections.includes(col)}
+                onChange={() => toggleCollection(col)}
+                className="w-3.5 h-3.5 md:w-4 md:h-4 rounded border-gray-300 cursor-pointer accent-[#680018]"
+              />
+            </li>
+          ))}
+        </ul>
       </div>
 
-      {/* Divider */}
-      <div className="border-t border-gray-200 my-4 md:my-5" />
-
-      {/* Цена — collapsible */}
+      {/* Price Filter */}
       <div>
-        <button
-          onClick={() => setPriceOpen(!priceOpen)}
-          className="flex items-center justify-between w-full text-left group/section"
-        >
-          <h3 className="text-xs md:text-sm font-medium text-[#1A1314]">Цена</h3>
-          <ChevronDown
-            className={`w-3.5 h-3.5 md:w-4 md:h-4 text-[#706567] transition-transform duration-200 ${priceOpen ? 'rotate-0' : '-rotate-90'}`}
-          />
-        </button>
-        <div
-          className={`overflow-hidden transition-all duration-300 ease-in-out ${priceOpen ? 'max-h-[200px] opacity-100 mt-3 md:mt-4' : 'max-h-0 opacity-0 mt-0'}`}
-        >
-          <div className="w-full relative h-1.5 bg-gray-200 rounded mb-3 md:mb-4">
+        <h3 className="text-xs md:text-sm font-medium mb-3 md:mb-4 text-[#1A1314]">Цена</h3>
+        <div className="w-full relative h-1.5 bg-gray-200 rounded mb-3 md:mb-4">
             {/* Active track between the two thumbs */}
             <div
               className="absolute h-1.5 rounded"
@@ -783,7 +755,6 @@ function CatalogPage({
             <span>{formatPrice(priceMin)}</span>
             <span>{formatPrice(priceMax)}</span>
           </div>
-        </div>
       </div>
     </>
   );
@@ -809,11 +780,18 @@ function CatalogPage({
 
         {/* Sidebar — hidden on mobile unless filtersOpen, always visible on md+ */}
         <aside className={`w-full md:w-56 lg:w-64 flex-shrink-0 ${filtersOpen ? '' : 'hidden md:block'}`}>
-          <div className="flex items-center justify-between font-medium mb-5 md:mb-6 text-[#1A1314]">
+          <button
+            onClick={() => setFiltersExpanded(!filtersExpanded)}
+            className="flex items-center justify-between w-full font-medium mb-5 md:mb-6 text-[#1A1314] group/filter"
+          >
             <span className="text-base md:text-lg">Фильтры</span>
-            <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5 text-[#1A1314]" />
+            <ChevronDown
+              className={`w-4 h-4 md:w-5 md:h-5 text-[#1A1314] transition-transform duration-200 ${filtersExpanded ? 'rotate-0' : '-rotate-90'}`}
+            />
+          </button>
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${filtersExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            {filterContent}
           </div>
-          {filterContent}
         </aside>
 
         {/* Main Content */}
