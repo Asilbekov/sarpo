@@ -7,14 +7,22 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface CompletedOrder {
+  id: string;
+  items: CartItem[];
+  totalPrice: number;
+  customer: { name: string; phone: string; address: string };
+  paymentMethod: string;
+  createdAt: string;
+}
+
 interface CartState {
   items: CartItem[];
-  orderPlaced: boolean;
+  completedOrders: CompletedOrder[];
   addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
-  setOrderPlaced: (placed: boolean) => void;
+  moveToCompleted: (orderId: string, customer: { name: string; phone: string; address: string }, paymentMethod: string) => void;
+  clearCompleted: () => void;
   totalItems: () => number;
   totalPrice: () => number;
 }
@@ -23,7 +31,7 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      orderPlaced: false,
+      completedOrders: [],
       addItem: (product, quantity = 1) => {
         set((state) => {
           const existing = state.items.find((item) => item.product.id === product.id);
@@ -39,11 +47,6 @@ export const useCartStore = create<CartState>()(
           return { items: [...state.items, { product, quantity }] };
         });
       },
-      removeItem: (productId) => {
-        set((state) => ({
-          items: state.items.filter((item) => item.product.id !== productId),
-        }));
-      },
       updateQuantity: (productId, quantity) => {
         if (quantity < 1) return;
         set((state) => ({
@@ -52,8 +55,25 @@ export const useCartStore = create<CartState>()(
           ),
         }));
       },
-      clearCart: () => set({ items: [], orderPlaced: false }),
-      setOrderPlaced: (placed) => set({ orderPlaced: placed }),
+      moveToCompleted: (orderId, customer, paymentMethod) => {
+        set((state) => {
+          const currentItems = [...state.items];
+          const totalPrice = currentItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+          const newOrder: CompletedOrder = {
+            id: orderId,
+            items: currentItems,
+            totalPrice,
+            customer,
+            paymentMethod,
+            createdAt: new Date().toISOString(),
+          };
+          return {
+            items: [],
+            completedOrders: [newOrder, ...state.completedOrders],
+          };
+        });
+      },
+      clearCompleted: () => set({ completedOrders: [] }),
       totalItems: () => get().items.reduce((sum, item) => sum + item.quantity, 0),
       totalPrice: () =>
         get().items.reduce((sum, item) => sum + item.product.price * item.quantity, 0),

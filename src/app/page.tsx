@@ -1017,20 +1017,34 @@ function ProductPage({
 function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView) => void; onSelectProduct: (product: Product) => void }) {
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const moveToCompleted = useCartStore((s) => s.moveToCompleted);
+  const completedOrders = useCartStore((s) => s.completedOrders);
   const total = useCartStore((s) => s.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0));
   const [paymentMethod, setPaymentMethod] = useState('payme');
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [orderLoading, setOrderLoading] = useState(false);
-  const orderPlaced = useCartStore((s) => s.orderPlaced);
-  const setOrderPlaced = useCartStore((s) => s.setOrderPlaced);
+
+  // UUID regex pattern
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   const handleOrder = async () => {
     if (items.length === 0) {
       toast.error('Корзина пуста');
       return;
     }
+
+    // Validate all product IDs are valid UUIDs
+    const invalidItems = items.filter((item) => !UUID_RE.test(item.product.id));
+    if (invalidItems.length > 0) {
+      toast.error('Некоторые товары устарели', {
+        description: 'Удалите старые товары из корзины и добавьте их заново из каталога',
+        duration: 5000,
+      });
+      return;
+    }
+
     if (!customerName.trim()) {
       toast.error('Введите имя');
       return;
@@ -1074,9 +1088,10 @@ function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView
       }
 
       toast.success('Заказ оформлен!', {
-        description: `Статус: оформлен | Сумма: ${formatPrice(total)}`,
+        description: `Сумма: ${formatPrice(total)}`,
       });
-      setOrderPlaced(true);
+      const orderId = data?.orderId || String(Date.now());
+      moveToCompleted(orderId, { name: customerName.trim(), phone: phone.trim(), address: address.trim() }, paymentMethod);
       setCustomerName('');
       setPhone('');
       setAddress('');
@@ -1097,28 +1112,80 @@ function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView
         <p className="text-[#680018] text-xs md:text-sm">Оформление заказа</p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
-        {/* Left: Cart Items */}
-        <div className="flex-1 bg-white p-4 md:p-6 shadow-sm rounded-md border border-gray-100">
-
-          {/* Table header */}
-          <div className="hidden md:grid grid-cols-12 text-xs md:text-sm font-medium text-[#1A1314] border-b border-gray-200 pb-3 md:pb-4 mb-3 md:mb-4">
-            <div className="col-span-1">Фото</div>
-            <div className="col-span-3">Наименование продукта</div>
-            <div className="col-span-2 text-center">Количество</div>
-            <div className="col-span-3 text-center">Общая сумма</div>
-            <div className="col-span-3 text-center">Статус</div>
+      <div className="flex flex-col gap-8 md:gap-12">
+        {/* ── Table 1: Completed Orders ── */}
+        {completedOrders.length > 0 && (
+        <div className="bg-white p-4 md:p-6 shadow-sm rounded-md border border-gray-100">
+          <div className="mb-4 md:mb-6">
+            <h2 className="text-xl md:text-2xl font-medium text-[#1A1314] mb-1">Оформленные заказы</h2>
+            <p className="text-[#706567] text-xs md:text-sm">Ваши подтверждённые заказы</p>
           </div>
 
-          <div className="space-y-4 md:space-y-6">
-            {items.map((item) => (
+          <div className="space-y-4">
+            {completedOrders.map((order) => (
+              <div key={order.id} className="border border-gray-200 rounded-md p-3 md:p-4" style={{ backgroundColor: '#F9F7F5' }}>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-gray-200">
+                  <div>
+                    <span className="text-xs md:text-sm font-medium text-[#680018]">Заказ #{order.id.slice(0, 8)}</span>
+                    <span className="text-xs text-[#706567] ml-2">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</span>
+                  </div>
+                  <span className="text-sm md:text-base font-medium text-[#1A1314]">{formatPrice(order.totalPrice)}</span>
+                </div>
+                <div className="space-y-2">
+                  {order.items.map((item) => (
+                    <div
+                      key={item.product.id}
+                      className="grid grid-cols-12 items-center text-xs md:text-sm gap-2 cursor-pointer hover:bg-white/60 rounded-sm transition-colors px-1"
+                      onClick={() => onSelectProduct(item.product)}
+                    >
+                      <div className="col-span-2 md:col-span-1 flex items-center justify-center">
+                        {item.product.image ? (
+                        <img src={item.product.image} alt={item.product.name} className="w-10 h-14 md:w-12 md:h-16 object-cover rounded-sm" />
+                        ) : (
+                          <div className="w-10 h-14 md:w-12 md:h-16 bg-gray-200 rounded-sm flex items-center justify-center">
+                            <ShoppingBag className="w-5 h-5 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="col-span-5 md:col-span-6">
+                        <p className="text-xs md:text-sm font-medium text-[#1A1314] line-clamp-1 hover:text-[#680018] transition-colors">{item.product.name}</p>
+                      </div>
+                      <div className="col-span-2 text-center text-[#706567]">{item.quantity} шт</div>
+                      <div className="col-span-3 text-right text-xs md:text-sm font-medium text-[#1A1314]">{formatPrice(item.product.price * item.quantity)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        )}
+
+        <div className="flex flex-col lg:flex-row gap-8 md:gap-12">
+          {/* ── Table 2: Cart Items ── */}
+          <div className="flex-1 bg-white p-4 md:p-6 shadow-sm rounded-md border border-gray-100">
+            <div className="mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl font-medium text-[#1A1314] mb-1">Корзина</h2>
+              <p className="text-[#706567] text-xs md:text-sm">Товары, которые вы выбрали</p>
+            </div>
+
+            {/* Table header */}
+            <div className="hidden md:grid grid-cols-8 text-xs md:text-sm font-medium text-[#1A1314] border-b border-gray-200 pb-3 md:pb-4 mb-3 md:mb-4">
+              <div className="col-span-1">Фото</div>
+              <div className="col-span-3">Наименование продукта</div>
+              <div className="col-span-2 text-center">Количество</div>
+              <div className="col-span-2 text-center">Общая сумма</div>
+            </div>
+
+            <div className="space-y-4 md:space-y-6">
+              {items.map((item) => (
               <div
                 key={item.product.id}
-                className="grid grid-cols-12 items-center text-xs md:text-sm gap-2 cursor-pointer hover:bg-[#F9F7F5] rounded-sm transition-colors -mx-1 px-1"
+                className="grid grid-cols-8 items-center text-xs md:text-sm gap-2 cursor-pointer hover:bg-[#F9F7F5] rounded-sm transition-colors -mx-1 px-1"
                 onClick={() => onSelectProduct(item.product)}
               >
                 {/* Photo */}
-                <div className="col-span-2 md:col-span-1 flex items-center justify-center">
+                <div className="col-span-1 flex items-center justify-center">
                   {item.product.image ? (
                   <img
                     src={item.product.image}
@@ -1133,11 +1200,11 @@ function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView
                   )}
                 </div>
                 {/* Name */}
-                <div className="col-span-4 md:col-span-3">
+                <div className="col-span-3">
                   <p className="text-sm md:text-base font-medium text-[#1A1314] line-clamp-2 hover:text-[#680018] transition-colors">{item.product.name}</p>
                 </div>
                 {/* Quantity */}
-                <div className="col-span-3 md:col-span-2 flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
+                <div className="col-span-2 flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center">
                     <button
                       onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
@@ -1162,37 +1229,26 @@ function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView
                   </div>
                 </div>
                 {/* Total */}
-                <div className="col-span-2 md:col-span-2 flex justify-center items-center">
+                <div className="col-span-2 flex justify-center items-center">
                   <span className="text-sm md:text-lg font-medium text-[#1A1314]">
                     {formatPrice(item.product.price * item.quantity)}
                   </span>
                 </div>
-                {/* Status */}
-                <div className="col-span-2 md:col-span-4 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-                  <span className={`text-sm font-medium px-3 py-1 rounded-md whitespace-nowrap ${
-                    orderPlaced
-                      ? 'bg-[#680018] text-white'
-                      : 'bg-gray-100 text-[#706567]'
-                  }`}>
-                    {orderPlaced ? 'оформлен' : 'в корзине'}
-                  </span>
+              </div>
+              ))}
+              {items.length === 0 && (
+                <div className="text-center py-10 md:py-12">
+                  <p className="text-[#706567] text-base md:text-lg mb-4">Корзина пуста</p>
+                  <button
+                    onClick={() => onNavigate('catalog')}
+                    className="text-[#680018] text-sm font-medium hover:underline"
+                  >
+                    Перейти в каталог →
+                  </button>
                 </div>
-
-              </div>
-            ))}
-            {items.length === 0 && (
-              <div className="text-center py-10 md:py-12">
-                <p className="text-[#706567] text-base md:text-lg mb-4">Корзина пуста</p>
-                <button
-                  onClick={() => onNavigate('catalog')}
-                  className="text-[#680018] text-sm font-medium hover:underline"
-                >
-                  Перейти в каталог →
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
 
         {/* Right: Checkout Form */}
         <div className="w-full lg:w-[380px] md:w-[400px]">
@@ -1333,13 +1389,14 @@ function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView
 
             <button
               onClick={handleOrder}
-              disabled={orderLoading || orderPlaced}
+              disabled={orderLoading || items.length === 0}
               className="w-full text-white py-3 md:py-4 font-medium rounded-md transition-colors tracking-wide hover:bg-[#680018] disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#2D020C' }}
             >
-              {orderLoading ? 'Оформление...' : orderPlaced ? 'Заказ оформлен' : 'Оформить заказ'}
+              {orderLoading ? 'Оформление...' : 'Оформить заказ'}
             </button>
           </div>
+        </div>
         </div>
       </div>
     </div>
