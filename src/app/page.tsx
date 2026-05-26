@@ -859,6 +859,7 @@ function ProductPage({
     toast.success(`${product.name} добавлен в корзину`, {
       description: `Количество: ${quantity}`,
     });
+    onNavigate('cart');
   };
 
   return (
@@ -1024,7 +1025,7 @@ interface CartSortState {
   direction: CartSortDirection;
 }
 
-function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
+function CartPage({ onNavigate, onSelectProduct }: { onNavigate: (page: PageView) => void; onSelectProduct: (product: Product) => void }) {
   const items = useCartStore((s) => s.items);
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
@@ -1251,23 +1252,30 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
             {sortedItems.map((item) => (
               <div
                 key={item.product.id}
-                className="grid grid-cols-12 items-center text-xs md:text-sm gap-2"
+                className="grid grid-cols-12 items-center text-xs md:text-sm gap-2 cursor-pointer hover:bg-[#F9F7F5] rounded-sm transition-colors -mx-1 px-1"
+                onClick={() => onSelectProduct(item.product)}
               >
                 {/* Photo */}
                 <div className="col-span-2 md:col-span-1 flex items-center justify-center">
+                  {item.product.image ? (
                   <img
                     src={item.product.image}
                     alt={item.product.name}
                     className="w-12 h-16 md:w-16 md:h-20 object-cover rounded-sm"
                     style={{ backgroundColor: '#FFFFFF' }}
                   />
+                  ) : (
+                    <div className="w-12 h-16 md:w-16 md:h-20 bg-gray-100 rounded-sm flex items-center justify-center">
+                      <ShoppingBag className="w-6 h-6 text-gray-300" />
+                    </div>
+                  )}
                 </div>
                 {/* Name */}
-                <div className="col-span-4 md:col-span-3 text-sm md:text-base font-medium text-[#1A1314]">
-                  {item.product.name}
+                <div className="col-span-4 md:col-span-3">
+                  <p className="text-sm md:text-base font-medium text-[#1A1314] line-clamp-2 hover:text-[#680018] transition-colors">{item.product.name}</p>
                 </div>
                 {/* Quantity */}
-                <div className="col-span-3 md:col-span-2 flex justify-center items-center">
+                <div className="col-span-3 md:col-span-2 flex justify-center items-center" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center">
                     <button
                       onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
@@ -1292,20 +1300,27 @@ function CartPage({ onNavigate }: { onNavigate: (page: PageView) => void }) {
                   </div>
                 </div>
                 {/* Total */}
-                <div className="col-span-3 md:col-span-3 flex justify-center items-center">
+                <div className="col-span-2 md:col-span-2 flex justify-center items-center">
                   <span className="text-sm md:text-lg font-medium text-[#1A1314]">
                     {formatPrice(item.product.price * item.quantity)}
                   </span>
                 </div>
-                {/* Status */}
-                <div className="hidden md:flex col-span-3 items-center justify-center">
-                  <span className={`text-sm font-medium px-3 py-1 rounded-md whitespace-nowrap ${
+                {/* Status + Remove */}
+                <div className="col-span-2 md:col-span-4 flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <span className={`hidden md:inline text-sm font-medium px-3 py-1 rounded-md whitespace-nowrap ${
                     orderPlaced
                       ? 'bg-[#680018] text-white'
                       : 'bg-gray-100 text-[#706567]'
                   }`}>
                     {orderPlaced ? 'оформлен' : 'в корзине'}
                   </span>
+                  <button
+                    onClick={() => removeItem(item.product.id)}
+                    className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                    aria-label="Удалить"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
 
               </div>
@@ -1514,7 +1529,7 @@ export default function Home() {
             <ProductPage product={selectedProduct} onNavigate={navigate} onSelectProduct={selectProduct} />
           )}
           {currentPage === 'cart' && (
-            <CartPage onNavigate={navigate} />
+            <CartPage onNavigate={navigate} onSelectProduct={selectProduct} />
           )}
         </div>
         <style jsx>{`
