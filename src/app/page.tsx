@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Search,
   ShoppingBag,
@@ -27,6 +27,22 @@ import { toast } from 'sonner';
 
 /* ──────────────── Types ──────────────── */
 type PageView = 'home' | 'catalog' | 'product' | 'cart';
+
+interface CatalogFilterState {
+  search: string;
+  selectedCollections: string[];
+  sortBy: string;
+  priceMin: number;
+  priceMax: number;
+}
+
+interface HistoryEntry {
+  page: PageView;
+  selectedProduct: Product | null;
+  catalogSearch: string;
+  catalogCollection: string;
+  catalogFilterState: CatalogFilterState;
+}
 
 /* ──────────────── BackButton ──────────────── */
 function BackButton({ onBack }: { onBack: () => void }) {
@@ -599,26 +615,31 @@ function HomePage({
 /* ──────────────── CatalogPage ──────────────── */
 function CatalogPage({
   onSelectProduct,
-  initialSearch = '',
-  initialCollection = '',
+  initialState,
   onGoBack,
+  onFilterChange,
 }: {
   onSelectProduct: (product: Product) => void;
-  initialSearch?: string;
-  initialCollection?: string;
+  initialState?: CatalogFilterState;
   onGoBack?: () => void;
+  onFilterChange?: (state: CatalogFilterState) => void;
 }) {
   const { data: products, loading: loadingProducts } = useProducts();
   const { data: collections, loading: loadingCollections } = useCollections();
-  const [searchQuery, setSearchQuery] = useState(initialSearch);
-  const [selectedCollections, setSelectedCollections] = useState<string[]>(initialCollection ? [initialCollection] : []);
-  const [sortOpen, setSortOpen] = useState(false);
-  const [sortBy, setSortBy] = useState('newest');
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const PRICE_MIN = 0;
   const PRICE_MAX = 15000000;
-  const [priceMin, setPriceMin] = useState(PRICE_MIN);
-  const [priceMax, setPriceMax] = useState(PRICE_MAX);
+  const [searchQuery, setSearchQuery] = useState(initialState?.search ?? '');
+  const [selectedCollections, setSelectedCollections] = useState<string[]>(initialState?.selectedCollections ?? []);
+  const [sortOpen, setSortOpen] = useState(false);
+  const [sortBy, setSortBy] = useState(initialState?.sortBy ?? 'newest');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [priceMin, setPriceMin] = useState(initialState?.priceMin ?? PRICE_MIN);
+  const [priceMax, setPriceMax] = useState(initialState?.priceMax ?? PRICE_MAX);
+
+  // Report filter changes to parent so it can store them in navigation history
+  useEffect(() => {
+    onFilterChange?.({ search: searchQuery, selectedCollections, sortBy, priceMin, priceMax });
+  }, [searchQuery, selectedCollections, sortBy, priceMin, priceMax, onFilterChange]);
 
   const toggleCollection = (col: string) => {
     setSelectedCollections((prev) =>
@@ -1449,54 +1470,114 @@ function CartPage({ onNavigate, onSelectProduct, onGoBack }: { onNavigate: (page
 }
 
 /* ──────────────── Main Page ──────────────── */
+const DEFAULT_CATALOG_FILTER: CatalogFilterState = {
+  search: '',
+  selectedCollections: [],
+  sortBy: 'newest',
+  priceMin: 0,
+  priceMax: 15000000,
+};
+
 export default function Home() {
   const [currentPage, setCurrentPage] = useState<PageView>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [catalogSearch, setCatalogSearch] = useState('');
   const [catalogCollection, setCatalogCollection] = useState('');
+  const [catalogFilterState, setCatalogFilterState] = useState<CatalogFilterState>({ ...DEFAULT_CATALOG_FILTER });
   const [contactOpen, setContactOpen] = useState(false);
   const { data: collections } = useCollections();
-  const [previousPage, setPreviousPage] = useState<PageView | null>(null);
+
+  // Navigation history stack (ref to avoid stale closures in callbacks)
+  const historyRef = useRef<HistoryEntry[]>([]);
+
+  // Ref mirrors for current values — used inside callbacks to always get latest
+  const currentPageRef = useRef(currentPage);
+  const selectedProductRef = useRef(selectedProduct);
+  const catalogSearchRef = useRef(catalogSearch);
+  const catalogCollectionRef = useRef(catalogCollection);
+  const catalogFilterStateRef = useRef(catalogFilterState);
+
+  // Sync refs with current state (must be done in effects, not during render)
+  useEffect(() => { currentPageRef.current = currentPage; }, [currentPage]);
+  useEffect(() => { selectedProductRef.current = selectedProduct; }, [selectedProduct]);
+  useEffect(() => { catalogSearchRef.current = catalogSearch; }, [catalogSearch]);
+  useEffect(() => { catalogCollectionRef.current = catalogCollection; }, [catalogCollection]);
+  useEffect(() => { catalogFilterStateRef.current = catalogFilterState; }, [catalogFilterState]);
+
+  // Push the current full page state onto the history stack
+  const pushToHistory = useCallback(() => {
+    historyRef.current.push({
+      page: currentPageRef.current,
+      selectedProduct: selectedProductRef.current,
+      catalogSearch: catalogSearchRef.current,
+      catalogCollection: catalogCollectionRef.current,
+      catalogFilterState: { ...catalogFilterStateRef.current },
+    });
+  }, []);
 
   const navigate = useCallback((page: PageView) => {
-    setPreviousPage(currentPage);
+    pushToHistory();
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentPage]);
+  }, [pushToHistory]);
 
   const goBack = useCallback(() => {
-    if (previousPage) {
-      setCurrentPage(previousPage);
-      setPreviousPage(null);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (historyRef.current.length > 0) {
+      const entry = historyRef.current.pop()!;
+      setCurrentPage(entry.page);
+      setSelectedProduct(entry.selectedProduct);
+      setCatalogSearch(entry.catalogSearch);
+      setCatalogCollection(entry.catalogCollection);
+      setCatalogFilterState(entry.catalogFilterState);
     } else {
       setCurrentPage('home');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [previousPage]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const selectProduct = useCallback((product: Product) => {
-    setPreviousPage(currentPage);
+    pushToHistory();
     setSelectedProduct(product);
     setCurrentPage('product');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentPage]);
+  }, [pushToHistory]);
 
   const navigateToSearch = useCallback((query: string) => {
-    setPreviousPage(currentPage);
+    pushToHistory();
+    const newFilter: CatalogFilterState = {
+      search: query,
+      selectedCollections: [],
+      sortBy: 'newest',
+      priceMin: 0,
+      priceMax: 15000000,
+    };
     setCatalogSearch(query);
     setCatalogCollection('');
+    setCatalogFilterState(newFilter);
     setCurrentPage('catalog');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentPage]);
+  }, [pushToHistory]);
 
   const navigateToCollection = useCallback((col: string) => {
-    setPreviousPage(currentPage);
+    pushToHistory();
+    const newFilter: CatalogFilterState = {
+      search: '',
+      selectedCollections: col ? [col] : [],
+      sortBy: 'newest',
+      priceMin: 0,
+      priceMax: 15000000,
+    };
     setCatalogCollection(col);
     setCatalogSearch('');
+    setCatalogFilterState(newFilter);
     setCurrentPage('catalog');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentPage]);
+  }, [pushToHistory]);
+
+  // Stable callback for catalog filter changes (avoids infinite re-renders)
+  const handleCatalogFilterChange = useCallback((state: CatalogFilterState) => {
+    setCatalogFilterState(state);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F9F7F5' }}>
@@ -1511,7 +1592,7 @@ export default function Home() {
             <HomePage onNavigate={navigate} onSelectProduct={selectProduct} onCollectionNavigate={navigateToCollection} />
           )}
           {currentPage === 'catalog' && (
-            <CatalogPage key={`${catalogSearch}-${catalogCollection}`} onSelectProduct={selectProduct} initialSearch={catalogSearch} initialCollection={catalogCollection} onGoBack={goBack} />
+            <CatalogPage key={`${catalogSearch}-${catalogCollection}`} onSelectProduct={selectProduct} initialState={catalogFilterState} onGoBack={goBack} onFilterChange={handleCatalogFilterChange} />
           )}
           {currentPage === 'product' && selectedProduct && (
             <ProductPage product={selectedProduct} onNavigate={navigate} onSelectProduct={selectProduct} onGoBack={goBack} />
