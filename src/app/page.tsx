@@ -29,18 +29,12 @@ import { toast } from 'sonner';
 type PageView = 'home' | 'catalog' | 'product' | 'cart';
 
 /* ──────────────── Header ──────────────── */
-function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate, onContactClick }: { onNavigate: (page: PageView) => void; currentPage: PageView; onSearch: (query: string) => void; onCollectionNavigate: (collection: string) => void; onContactClick: () => void }) {
+function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate, onContactClick, collections }: { onNavigate: (page: PageView) => void; currentPage: PageView; onSearch: (query: string) => void; onCollectionNavigate: (collection: string) => void; onContactClick: () => void; collections: string[] }) {
   const cartCount = useCartStore((s) => s.items.reduce((sum, item) => sum + item.quantity, 0));
   const [headerSearch, setHeaderSearch] = useState('');
   const [visible, setVisible] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
-  const navLinks = [
-    { title: 'Весенняя коллекция', collection: 'Весенняя коллекция' },
-    { title: 'Летняя коллекция', collection: 'Летняя коллекция' },
-    { title: 'Осенняя коллекция', collection: 'Осенняя коллекция' },
-    { title: 'Зимняя коллекция', collection: 'Зимняя коллекция' },
-    { title: 'Новинки', collection: 'Новинки' },
-  ];
+  const navLinks = collections.map((col) => ({ title: col, collection: col }));
 
   const handleHeaderSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,11 +162,9 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate, onCon
           style={{ backgroundColor: '#680018' }}
         >
           <div className="flex flex-col items-start gap-4 p-4">
-            <button onClick={() => { onCollectionNavigate('Весенняя коллекция'); setMenuOpen(false); }} className="text-sm text-white/80 hover:text-white transition-colors">Весенняя коллекция</button>
-            <button onClick={() => { onCollectionNavigate('Летняя коллекция'); setMenuOpen(false); }} className="text-sm text-white/80 hover:text-white transition-colors">Летняя коллекция</button>
-            <button onClick={() => { onCollectionNavigate('Осенняя коллекция'); setMenuOpen(false); }} className="text-sm text-white/80 hover:text-white transition-colors">Осенняя коллекция</button>
-            <button onClick={() => { onCollectionNavigate('Зимняя коллекция'); setMenuOpen(false); }} className="text-sm text-white/80 hover:text-white transition-colors">Зимняя коллекция</button>
-            <button onClick={() => { onCollectionNavigate('Новинки'); setMenuOpen(false); }} className="text-sm text-white/80 hover:text-white transition-colors">Новинки</button>
+            {collections.map((col) => (
+              <button key={col} onClick={() => { onCollectionNavigate(col); setMenuOpen(false); }} className="text-sm text-white/80 hover:text-white transition-colors">{col}</button>
+            ))}
           </div>
         </div>
 
@@ -199,7 +191,7 @@ function Header({ onNavigate, currentPage, onSearch, onCollectionNavigate, onCon
 }
 
 /* ──────────────── Footer ──────────────── */
-function Footer({ onCollectionNavigate }: { onCollectionNavigate: (collection: string) => void }) {
+function Footer({ onCollectionNavigate, collections }: { onCollectionNavigate: (collection: string) => void; collections: string[] }) {
   return (
     <footer
       className="text-white pt-8 md:pt-16 pb-6 md:pb-8 px-4 md:px-12 mt-auto"
@@ -209,10 +201,9 @@ function Footer({ onCollectionNavigate }: { onCollectionNavigate: (collection: s
         <div>
           <h3 className="font-medium text-lg mb-6 tracking-wide">Продукты</h3>
           <ul className="space-y-4 text-sm text-white/75">
-            <li><button onClick={() => onCollectionNavigate('Весенняя коллекция')} className="hover:text-white transition-colors">Весенняя коллекция</button></li>
-            <li><button onClick={() => onCollectionNavigate('Летняя коллекция')} className="hover:text-white transition-colors">Летняя коллекция</button></li>
-            <li><button onClick={() => onCollectionNavigate('Осенняя коллекция')} className="hover:text-white transition-colors">Осенняя коллекция</button></li>
-            <li><button onClick={() => onCollectionNavigate('Зимняя коллекция')} className="hover:text-white transition-colors">Зимняя коллекция</button></li>
+            {collections.map((col) => (
+              <li key={col}><button onClick={() => onCollectionNavigate(col)} className="hover:text-white transition-colors">{col}</button></li>
+            ))}
           </ul>
         </div>
         <div>
@@ -1444,6 +1435,7 @@ export default function Home() {
   const [catalogSearch, setCatalogSearch] = useState('');
   const [catalogCollection, setCatalogCollection] = useState('');
   const [contactOpen, setContactOpen] = useState(false);
+  const { data: collections } = useCollections();
 
   const navigate = useCallback((page: PageView) => {
     setCurrentPage(page);
@@ -1458,7 +1450,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#F9F7F5' }}>
-      <Header onNavigate={navigate} currentPage={currentPage} onSearch={(query) => { setCatalogSearch(query); setCatalogCollection(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onContactClick={() => setContactOpen(true)} />
+      <Header onNavigate={navigate} currentPage={currentPage} onSearch={(query) => { setCatalogSearch(query); setCatalogCollection(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} onContactClick={() => setContactOpen(true)} collections={collections} />
       <main className="flex-1">
         <div
           key={currentPage + (selectedProduct?.id || '')}
@@ -1485,7 +1477,7 @@ export default function Home() {
           }
         `}</style>
       </main>
-      <Footer onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} />
+      <Footer onCollectionNavigate={(col) => { setCatalogCollection(col); setCatalogSearch(''); setCurrentPage('catalog'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} collections={collections} />
       <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
     </div>
   );
