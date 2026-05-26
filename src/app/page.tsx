@@ -633,7 +633,6 @@ function CatalogPage({
   const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState(initialState?.sortBy ?? 'newest');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [priceMin, setPriceMin] = useState(initialState?.priceMin ?? PRICE_MIN);
   const [priceMax, setPriceMax] = useState(initialState?.priceMax ?? PRICE_MAX);
 
@@ -769,34 +768,20 @@ function CatalogPage({
       </div>
 
       <div className="flex gap-6 md:gap-10 flex-col md:flex-row">
-        {/* Mobile: Filter toggle button */}
-        <button
-          onClick={() => setFiltersOpen(!filtersOpen)}
-          className="md:hidden flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-md bg-white text-sm text-[#1A1314] font-medium w-full justify-center"
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          {filtersOpen ? 'Скрыть фильтры' : 'Фильтры'}
-        </button>
-
-        {/* Sidebar — hidden on mobile unless filtersOpen, always visible on md+ */}
-        <aside className={`w-full md:w-56 lg:w-64 flex-shrink-0 ${filtersOpen ? '' : 'hidden md:block'}`}>
-          <button
-            onClick={() => setFiltersExpanded(!filtersExpanded)}
-            className="flex items-center justify-between w-full font-medium mb-5 md:mb-6 text-[#1A1314] group/filter"
-          >
-            <span className="text-base md:text-lg">Фильтры</span>
-            <ChevronDown
-              className={`w-4 h-4 md:w-5 md:h-5 text-[#1A1314] transition-transform duration-200 ${filtersExpanded ? 'rotate-0' : '-rotate-90'}`}
-            />
-          </button>
-          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${filtersExpanded ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+        {/* Sidebar — shown when filtersOpen */}
+        {filtersOpen && (
+          <aside className="w-full md:w-56 lg:w-64 flex-shrink-0">
+            <div className="flex items-center justify-between font-medium mb-5 md:mb-6 text-[#1A1314]">
+              <span className="text-base md:text-lg">Фильтры</span>
+              <SlidersHorizontal className="w-4 h-4 md:w-5 md:h-5 text-[#1A1314]" />
+            </div>
             {filterContent}
-          </div>
-        </aside>
+          </aside>
+        )}
 
         {/* Main Content */}
         <div className="flex-1">
-          {/* Search and Sort Row */}
+          {/* Search, Filter Button, and Sort Row */}
           <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center mb-5 md:mb-6 gap-3 md:gap-6">
             <div className="flex-1 relative">
               <input
@@ -809,35 +794,51 @@ function CatalogPage({
               <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 md:w-4 md:h-4 text-gray-400" />
             </div>
 
-            <div className="relative">
+            <div className="flex gap-3">
+              {/* Filter toggle button */}
               <button
-                onClick={() => setSortOpen(!sortOpen)}
-                className="w-full sm:w-52 md:w-64 border border-gray-200 bg-white rounded-md p-2.5 md:p-3 flex justify-between items-center cursor-pointer"
+                onClick={() => setFiltersOpen(!filtersOpen)}
+                className={`flex items-center gap-2 px-4 py-2.5 md:py-3 rounded-md text-xs md:text-sm font-medium transition-colors border ${
+                  filtersOpen
+                    ? 'bg-[#680018] text-white border-[#680018]'
+                    : 'bg-white text-[#1A1314] border-gray-200 hover:border-[#680018] hover:text-[#680018]'
+                }`}
               >
-                <span className="text-xs md:text-sm text-[#1A1314]">
-                  {sortOptions.find((o) => o.value === sortBy)?.label || 'Сортировка'}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-500" />
+                <SlidersHorizontal className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                Фильтры
               </button>
-              {sortOpen && (
-                <div className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-md mt-1 shadow-lg z-10">
-                  <ul className="py-2 text-xs md:text-sm text-[#1A1314]">
-                    {sortOptions.map((opt) => (
-                      <li key={opt.value}>
-                        <button
-                          onClick={() => { setSortBy(opt.value); setSortOpen(false); }}
-                          className="w-full px-3 md:px-4 py-2 hover:bg-[#F9F7F5] flex justify-between items-center text-left"
-                        >
-                          {opt.label}
-                          {sortBy === opt.value && (
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#680018]" />
-                          )}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+
+              {/* Sort dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setSortOpen(!sortOpen)}
+                  className="w-full sm:w-44 md:w-52 border border-gray-200 bg-white rounded-md p-2.5 md:p-3 flex justify-between items-center cursor-pointer"
+                >
+                  <span className="text-xs md:text-sm text-[#1A1314]">
+                    {sortOptions.find((o) => o.value === sortBy)?.label || 'Сортировка'}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-500" />
+                </button>
+                {sortOpen && (
+                  <div className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-md mt-1 shadow-lg z-10">
+                    <ul className="py-2 text-xs md:text-sm text-[#1A1314]">
+                      {sortOptions.map((opt) => (
+                        <li key={opt.value}>
+                          <button
+                            onClick={() => { setSortBy(opt.value); setSortOpen(false); }}
+                            className="w-full px-3 md:px-4 py-2 hover:bg-[#F9F7F5] flex justify-between items-center text-left"
+                          >
+                            {opt.label}
+                            {sortBy === opt.value && (
+                              <span className="w-2.5 h-2.5 rounded-full bg-[#680018]" />
+                            )}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
